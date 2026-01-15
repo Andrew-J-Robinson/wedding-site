@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Our Wedding</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    h1, h2, h3, .font-display { font-family: 'Playfair Display', serif; }
+    .placeholder-img { background: repeating-linear-gradient(45deg, #e5e7eb, #e5e7eb 10px, #d1d5db 10px, #d1d5db 20px); }
+  </style>
+</head>
+<body class="bg-white text-slate-800">
+  <header class="sticky top-0 z-20 backdrop-blur bg-white/80 border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
+      <div class="font-display text-lg">A &amp; M</div>
+      <nav class="hidden md:flex gap-6 text-sm font-medium">
+        <a href="#home" class="hover:text-rose-600">Home</a>
+        <a href="#story" class="hover:text-rose-600">Our Story</a>
+        <a href="#photos" class="hover:text-rose-600">Photos</a>
+        <a href="#party" class="hover:text-rose-600">Wedding Party</a>
+        <a href="#qa" class="hover:text-rose-600">Q&amp;A</a>
+        <a href="#registry" class="hover:text-rose-600">Registry</a>
+        <a href="#rsvp" class="hover:text-rose-600">RSVP</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Home -->
+    <section id="home" class="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 grid md:grid-cols-2 gap-10 items-center">
+      <div class="space-y-4">
+        <p class="uppercase tracking-[0.25em] text-xs text-rose-500">We're getting married</p>
+        <h1 class="text-4xl sm:text-5xl font-display text-slate-900">Andrew &amp; Miranda</h1>
+        <p class="text-lg text-slate-700">Saturday, September 5, 2026 &middot; Marysville, Ohio</p>
+        <p class="text-slate-600">We can't wait to celebrate with you. Please join us for a weekend of love, laughter, and great wine.</p>
+        <div class="flex gap-3">
+          <a href="#rsvp" class="inline-flex items-center justify-center px-6 py-3 rounded-full bg-rose-600 text-white font-semibold shadow hover:bg-rose-500 transition">RSVP</a>
+          <a href="#story" class="inline-flex items-center justify-center px-4 py-3 rounded-full border border-slate-200 text-slate-700 font-semibold hover:border-rose-200">Our Story</a>
+        </div>
+      </div>
+      <div class="w-full aspect-[4/5] rounded-3xl overflow-hidden placeholder-img"></div>
+    </section>
+
+    <!-- Our Story -->
+    <section id="story" class="bg-rose-50/60 py-16 sm:py-20">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 grid md:grid-cols-2 gap-12 items-center">
+        <div class="space-y-4">
+          <p class="uppercase tracking-[0.25em] text-xs text-rose-500">Our Story</p>
+          <h2 class="text-3xl font-display text-slate-900">From first hello to forever</h2>
+          <p class="text-slate-700 leading-relaxed">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris fermentum, nibh at tempus posuere, arcu risus facilisis lorem, at auctor dolor lorem non arcu.</p>
+          <p class="text-slate-700 leading-relaxed">Suspendisse potenti. Integer vitae justo vel nisl dignissim bibendum nec eget lorem, vitae convallis mi urna at nibh.</p>
+        </div>
+        <div class="w-full aspect-[5/4] rounded-2xl overflow-hidden placeholder-img"></div>
+      </div>
+    </section>
+
+    <!-- Photos -->
+    <section id="photos" class="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
+      <div class="flex items-start justify-between gap-4 mb-8">
+        <div>
+          <p class="uppercase tracking-[0.25em] text-xs text-rose-500">Photos</p>
+          <h2 class="text-3xl font-display text-slate-900">Engagement moments</h2>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div class="aspect-[4/5] rounded-2xl placeholder-img"></div>
+        <div class="aspect-square rounded-2xl placeholder-img"></div>
+        <div class="aspect-[4/5] rounded-2xl placeholder-img"></div>
+        <div class="aspect-square rounded-2xl placeholder-img"></div>
+        <div class="aspect-[4/5] rounded-2xl placeholder-img"></div>
+        <div class="aspect-square rounded-2xl placeholder-img"></div>
+      </div>
+    </section>
+
+    <!-- Wedding Party -->
+    <section id="party" class="bg-slate-50 py-16 sm:py-20">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <p class="uppercase tracking-[0.25em] text-xs text-rose-500">Wedding Party</p>
+        <h2 class="text-3xl font-display text-slate-900 mb-8">Our favorite people</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center">
+            <div class="w-20 h-20 rounded-xl placeholder-img"></div>
+            <div>
+              <p class="font-semibold text-slate-900">[redacted]</p>
+              <p class="text-sm text-slate-600">Maid of Honor</p>
+            </div>
+          </div>
+          <div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center">
+            <div class="w-20 h-20 rounded-xl placeholder-img"></div>
+            <div>
+              <p class="font-semibold text-slate-900">[redacted]</p>
+              <p class="text-sm text-slate-600">Best Man</p>
+            </div>
+          </div>
+          <div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center">
+            <div class="w-20 h-20 rounded-xl placeholder-img"></div>
+            <div>
+              <p class="font-semibold text-slate-900">[redacted]</p>
+              <p class="text-sm text-slate-600">Bridesmaid</p>
+            </div>
+          </div>
+          <div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center">
+            <div class="w-20 h-20 rounded-xl placeholder-img"></div>
+            <div>
+              <p class="font-semibold text-slate-900">[redacted]</p>
+              <p class="text-sm text-slate-600">Groomsman</p>
+            </div>
+          </div>
+          <div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center">
+            <div class="w-20 h-20 rounded-xl placeholder-img"></div>
+            <div>
+              <p class="font-semibold text-slate-900">[redacted]</p>
+              <p class="text-sm text-slate-600">Bridesmaid</p>
+            </div>
+          </div>
+          <div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center">
+            <div class="w-20 h-20 rounded-xl placeholder-img"></div>
+            <div>
+              <p class="font-semibold text-slate-900">[redacted]</p>
+              <p class="text-sm text-slate-600">Groomsman</p>
+            </div>
+          </div>
+          <div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center">
+            <div class="w-20 h-20 rounded-xl placeholder-img"></div>
+            <div>
+              <p class="font-semibold text-slate-900">[redacted]</p>
+              <p class="text-sm text-slate-600">Bridesman</p>
+            </div>
+          </div>
+          <div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center">
+            <div class="w-20 h-20 rounded-xl placeholder-img"></div>
+            <div>
+              <p class="font-semibold text-slate-900">[redacted]</p>
+              <p class="text-sm text-slate-600">Groomsman</p>
+            </div>
+          </div>
+          <div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center">
+            <div class="w-20 h-20 rounded-xl placeholder-img"></div>
+            <div>
+              <p class="font-semibold text-slate-900">[redacted]</p>
+              <p class="text-sm text-slate-600">Bridesmaid</p>
+            </div>
+          </div>
+          <div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center">
+            <div class="w-20 h-20 rounded-xl placeholder-img"></div>
+            <div>
+              <p class="font-semibold text-slate-900">[redacted]</p>
+              <p class="text-sm text-slate-600">Groomsman</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Q&A -->
+    <section id="qa" class="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
+      <p class="uppercase tracking-[0.25em] text-xs text-rose-500">Q &amp; A</p>
+      <h2 class="text-3xl font-display text-slate-900 mb-6">Details &amp; logistics</h2>
+      <div class="divide-y divide-slate-200 border border-slate-200 rounded-2xl bg-white">
+        <details class="p-4" open>
+          <summary class="flex justify-between items-center cursor-pointer font-semibold text-slate-900">What time should I arrive? <span class="text-rose-500">+</span></summary>
+          <p class="mt-2 text-slate-700">Please arrive by 3:00 PM to be seated before the ceremony begins at 3:30 PM.</p>
+        </details>
+        <details class="p-4">
+          <summary class="flex justify-between items-center cursor-pointer font-semibold text-slate-900">Is there a dress code? <span class="text-rose-500">+</span></summary>
+          <p class="mt-2 text-slate-700">Dress is dressy casual. We'll be outside so please dress for the weather.</p>
+        </details>
+        <details class="p-4">
+          <summary class="flex justify-between items-center cursor-pointer font-semibold text-slate-900">Where do I park? <span class="text-rose-500">+</span></summary>
+          <p class="mt-2 text-slate-700">Parking is available in the field adjacent to the driveway. Please follow the signs to the parking area.</p>
+        </details>
+        <details class="p-4">
+          <summary class="flex justify-between items-center cursor-pointer font-semibold text-slate-900">Can I bring a plus-one? <span class="text-rose-500">+</span></summary>
+          <p class="mt-2 text-slate-700">We have planned seating carefully; please refer to your invitation for plus-one details.</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- Registry -->
+    <section id="registry" class="bg-slate-50 py-16 sm:py-20">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-4">
+        <p class="uppercase tracking-[0.25em] text-xs text-rose-500">Registry</p>
+        <h2 class="text-3xl font-display text-slate-900">Your presence is the best gift</h2>
+        <p class="text-slate-700">If you'd like to view our registries, please explore the links below.</p>
+        <div class="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
+          <a class="px-5 py-3 rounded-full bg-white border border-slate-200 shadow-sm hover:border-rose-200" href="#">Registry Placeholder 1</a>
+          <a class="px-5 py-3 rounded-full bg-white border border-slate-200 shadow-sm hover:border-rose-200" href="#">Registry Placeholder 2</a>
+          <a class="px-5 py-3 rounded-full bg-white border border-slate-200 shadow-sm hover:border-rose-200" href="#">Registry Placeholder 3</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- RSVP -->
+    <section id="rsvp" class="max-w-4xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
+      <div class="text-center mb-6">
+        <p class="uppercase tracking-[0.25em] text-xs text-rose-500">RSVP</p>
+        <h2 class="text-3xl font-display text-slate-900">Let us know you'll be there</h2>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 sm:p-8 space-y-6" id="rsvp-app">
+        <div id="rsvp-stepper" class="flex flex-wrap gap-2 text-sm font-medium text-slate-600"></div>
+        <div id="rsvp-body" class="space-y-4"></div>
+        <div class="flex justify-between items-center pt-2">
+          <button id="rsvp-prev" class="px-4 py-2 rounded-full border border-slate-200 text-slate-700 disabled:opacity-50" disabled>Back</button>
+          <button id="rsvp-next" class="px-5 py-2 rounded-full bg-rose-600 text-white font-semibold hover:bg-rose-500">Next</button>
+        </div>
+        <p id="rsvp-status" class="text-sm text-slate-600"></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-200 py-8 text-center text-sm text-slate-500 bg-white">
+    <p>We're so excited to celebrate with you in Marysville.</p>
+  </footer>
+
+  <script src="./scripts/main.js"></script>
+</body>
+</html>
