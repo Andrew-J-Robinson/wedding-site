@@ -15,6 +15,10 @@ dist/
 build/
 coverage/
 
+# Data files
+data/invitees.json
+data/rsvps.json
+
 # Cache
 .cache/
 .parcel-cache/
@@ -24,3 +28,13 @@ coverage/
 *.swp
 .idea/
 .vscode/
+
+# Photos
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.ico
+*.webp
