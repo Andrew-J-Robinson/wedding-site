@@ -23,17 +23,17 @@
 
   const setLoginStatus = (msg, tone = 'info') => {
     loginStatus.textContent = msg;
-    loginStatus.className = `text-sm ${tone === 'error' ? 'text-rose-600' : 'text-slate-600'}`;
+    loginStatus.className = `text-sm ${tone === 'error' ? 'text-magenta' : 'text-charcoal/70'}`;
   };
 
   const setUploadStatus = (msg, tone = 'info') => {
     uploadStatus.textContent = msg;
-    uploadStatus.className = `text-sm ${tone === 'error' ? 'text-rose-600' : 'text-slate-600'}`;
+    uploadStatus.className = `text-sm ${tone === 'error' ? 'text-magenta' : 'text-charcoal/70'}`;
   };
 
   const setRsvpStatus = (msg, tone = 'info') => {
     rsvpStatus.textContent = msg;
-    rsvpStatus.className = `text-sm ${tone === 'error' ? 'text-rose-600' : 'text-slate-600'}`;
+    rsvpStatus.className = `text-sm ${tone === 'error' ? 'text-magenta' : 'text-charcoal/70'}`;
   };
 
   const setAuthed = (authed) => {

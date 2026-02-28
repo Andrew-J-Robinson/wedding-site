@@ -6,57 +6,101 @@
   <title>Our Wedding</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            charcoal: 'var(--color-charcoal)',
+            lavender: 'var(--color-lavender)',
+            blush: 'var(--color-blush)',
+            magenta: 'var(--color-magenta)',
+            'wedding-bg': 'var(--color-bg)',
+          },
+          fontFamily: {
+            display: ['Cormorant Garamond', 'Georgia', 'serif'],
+            body: ['Lora', 'Georgia', 'serif'],
+          },
+        },
+      },
+    };
+  </script>
   <style>
+    :root {
+      --color-charcoal: #2a2a2a;
+      --color-lavender: #8770b8;
+      --color-blush: #f7dbd8;
+      --color-magenta: #c6195a;
+      --color-bg: #fdf8f7;
+    }
     html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-    h1, h2, h3, .font-display { font-family: 'Playfair Display', serif; }
-    .placeholder-img { background: repeating-linear-gradient(45deg, #e5e7eb, #e5e7eb 10px, #d1d5db 10px, #d1d5db 20px); }
+    body { font-family: 'Lora', Georgia, serif; }
+    h1, h2, h3, .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .placeholder-img { background: repeating-linear-gradient(45deg, var(--color-blush), var(--color-blush) 10px, #eed5d2 10px, #eed5d2 20px); }
+    /* Nav light mode: over hero (dark background) */
+    header.nav-light { background: rgba(0,0,0,0.15); border-color: rgba(255,255,255,0.2); }
+    header.nav-light .nav-link,
+    header.nav-light .nav-logo { color: rgba(255,255,255,0.95); }
+    header.nav-light .nav-link:hover,
+    header.nav-light .nav-logo:hover { color: var(--color-blush); }
+    /* Nav dark mode: over content (light background) */
+    header:not(.nav-light) { background: rgba(253,248,247,0.9); border-color: rgba(247,219,216,0.6); }
+    header:not(.nav-light) .nav-link,
+    header:not(.nav-light) .nav-logo { color: var(--color-charcoal); }
+    header:not(.nav-light) .nav-link:hover,
+    header:not(.nav-light) .nav-logo:hover { color: var(--color-magenta); }
+    header .nav-link,
+    header .nav-logo { transition: color 0.2s; }
   </style>
 </head>
-<body class="bg-white text-slate-800">
-  <header class="sticky top-0 z-20 backdrop-blur bg-white/80 border-b border-slate-200">
+<body class="bg-wedding-bg text-charcoal">
+  <header id="site-header" class="sticky top-0 z-20 backdrop-blur border-b transition-colors nav-light" data-nav-root>
     <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
-      <div class="font-display text-lg">A &amp; M</div>
-      <nav class="hidden md:flex gap-6 text-sm font-medium">
-        <a href="#home" class="hover:text-rose-600">Home</a>
-        <a href="#story" class="hover:text-rose-600">Our Story</a>
-        <a href="#photos" class="hover:text-rose-600">Photos</a>
-        <a href="#party" class="hover:text-rose-600">Wedding Party</a>
-        <a href="#qa" class="hover:text-rose-600">Q&amp;A</a>
-        <a href="#registry" class="hover:text-rose-600">Registry</a>
-        <a href="#rsvp" class="hover:text-rose-600">RSVP</a>
+      <a href="#home" class="nav-logo font-display text-lg">A &amp; M</a>
+      <nav class="flex flex-wrap gap-4 sm:gap-6 text-sm font-medium">
+        <a href="#how-we-met" class="nav-link">How We Met</a>
+        <a href="#photos" class="nav-link">Photos</a>
+        <a href="#party" class="nav-link">Wedding Party</a>
+        <a href="#schedule" class="nav-link">Schedule</a>
+        <a href="#travel" class="nav-link">Travel</a>
+        <a href="#events" class="nav-link">Events</a>
+        <a href="#qa" class="nav-link">Q&amp;A</a>
+        <a href="/registry" class="nav-link">Registry</a>
+        <a href="/rsvp" class="nav-link font-semibold">RSVP</a>
       </nav>
     </div>
   </header>
 
   <main>
-    <!-- Home -->
-    <section id="home" class="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 grid md:grid-cols-2 gap-10 items-center">
-      <div class="space-y-4">
-        <p class="uppercase tracking-[0.25em] text-xs text-rose-500">We're getting married</p>
-        <h1 class="text-4xl sm:text-5xl font-display text-slate-900">Andrew &amp; Miranda</h1>
-        <p class="text-lg text-slate-700">Saturday, September 5, 2026 &middot; Marysville, Ohio</p>
-        <p class="text-slate-600">We can't wait to celebrate with you. Please join us for a weekend of love, laughter, and great wine.</p>
-        <div class="flex gap-3">
-          <a href="#rsvp" class="inline-flex items-center justify-center px-6 py-3 rounded-full bg-rose-600 text-white font-semibold shadow hover:bg-rose-500 transition">RSVP</a>
-          <a href="#story" class="inline-flex items-center justify-center px-4 py-3 rounded-full border border-slate-200 text-slate-700 font-semibold hover:border-rose-200">Our Story</a>
+    <!-- Hero - Full bleed (extends behind nav via negative margin) -->
+    <section id="home" class="relative min-h-screen -mt-16 flex items-end justify-center pb-[15vh]">
+      <div class="absolute inset-0 bg-cover bg-center bg-no-repeat" style="background-image: url('/hero.jpg');"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+      <div class="absolute inset-0 bg-charcoal/55"></div>
+      <div class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center text-white">
+        <p class="uppercase tracking-[0.25em] text-xs text-blush mb-4 drop-shadow-lg">We're getting married</p>
+        <h1 class="text-5xl sm:text-6xl md:text-7xl font-display font-semibold mb-4 drop-shadow-lg">Andrew &amp; Miranda</h1>
+        <p class="text-xl sm:text-2xl text-white/95 mb-4 drop-shadow-lg">Saturday, September 5, 2026 &middot; Marysville, Ohio</p>
+        <p class="text-lg text-white/90 max-w-xl mx-auto mb-8 drop-shadow-lg">We can't wait to celebrate with you. Please join us for a weekend of love, laughter, and great wine.</p>
+        <div class="flex flex-col sm:flex-row justify-center gap-3">
+          <a href="/rsvp" class="inline-flex items-center justify-center px-8 py-4 rounded-full bg-magenta text-white font-semibold shadow-lg hover:bg-magenta/90 transition">RSVP</a>
+          <a href="#how-we-met" class="inline-flex items-center justify-center px-6 py-4 rounded-full border-2 border-white/80 text-white font-semibold hover:bg-white/10 transition">How We Met</a>
         </div>
       </div>
-      <div class="w-full aspect-[4/5] rounded-3xl overflow-hidden placeholder-img"></div>
     </section>
 
-    <!-- Our Story -->
-    <section id="story" class="bg-rose-50/60 py-16 sm:py-20">
+    <!-- How We Met -->
+    <section id="how-we-met" class="bg-blush/30 py-16 sm:py-20">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 grid md:grid-cols-2 gap-12 items-center">
         <div class="space-y-4">
-          <p class="uppercase tracking-[0.25em] text-xs text-rose-500">Our Story</p>
-          <h2 class="text-3xl font-display text-slate-900">From first hello to forever</h2>
-          <p class="text-slate-700 leading-relaxed">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris fermentum, nibh at tempus posuere, arcu risus facilisis lorem, at auctor dolor lorem non arcu.</p>
-          <p class="text-slate-700 leading-relaxed">Suspendisse potenti. Integer vitae justo vel nisl dignissim bibendum nec eget lorem, vitae convallis mi urna at nibh.</p>
+          <p class="uppercase tracking-[0.25em] text-xs text-lavender">How We Met</p>
+          <h2 class="text-3xl sm:text-4xl font-display text-charcoal">From first hello to forever</h2>
+          <p class="text-charcoal/90 leading-relaxed">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris fermentum, nibh at tempus posuere, arcu risus facilisis lorem, at auctor dolor lorem non arcu.</p>
+          <p class="text-charcoal/90 leading-relaxed">Suspendisse potenti. Integer vitae justo vel nisl dignissim bibendum nec eget lorem, vitae convallis mi urna at nibh.</p>
         </div>
-        <div class="w-full aspect-[5/4] rounded-2xl overflow-hidden placeholder-img"></div>
+        <img src="/how-we-met.jpg" alt="Andrew and Miranda" class="w-full aspect-[5/4] object-cover rounded-2xl" />
       </div>
     </section>
 
@@ -64,160 +108,225 @@
     <section id="photos" class="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
       <div class="flex items-start justify-between gap-4 mb-8">
         <div>
-          <p class="uppercase tracking-[0.25em] text-xs text-rose-500">Photos</p>
-          <h2 class="text-3xl font-display text-slate-900">Engagement moments</h2>
+          <p class="uppercase tracking-[0.25em] text-xs text-lavender">Photos</p>
+          <h2 class="text-3xl sm:text-4xl font-display text-charcoal">Engagement moments</h2>
         </div>
       </div>
       <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <div class="aspect-[4/5] rounded-2xl placeholder-img"></div>
-        <div class="aspect-square rounded-2xl placeholder-img"></div>
-        <div class="aspect-[4/5] rounded-2xl placeholder-img"></div>
-        <div class="aspect-square rounded-2xl placeholder-img"></div>
-        <div class="aspect-[4/5] rounded-2xl placeholder-img"></div>
-        <div class="aspect-square rounded-2xl placeholder-img"></div>
+        <div class="aspect-[4/5] rounded-2xl overflow-hidden placeholder-img"></div>
+        <div class="aspect-square rounded-2xl overflow-hidden placeholder-img"></div>
+        <div class="aspect-[4/5] rounded-2xl overflow-hidden placeholder-img"></div>
+        <div class="aspect-square rounded-2xl overflow-hidden placeholder-img"></div>
+        <div class="aspect-[4/5] rounded-2xl overflow-hidden placeholder-img"></div>
+        <div class="aspect-square rounded-2xl overflow-hidden placeholder-img"></div>
       </div>
     </section>
 
     <!-- Wedding Party -->
-    <section id="party" class="bg-slate-50 py-16 sm:py-20">
+    <section id="party" class="bg-blush/20 py-16 sm:py-20">
       <div class="max-w-6xl mx-auto px-4 sm:px-6">
-        <p class="uppercase tracking-[0.25em] text-xs text-rose-500">Wedding Party</p>
-        <h2 class="text-3xl font-display text-slate-900 mb-8">Our favorite people</h2>
+        <p class="uppercase tracking-[0.25em] text-xs text-lavender">Wedding Party</p>
+        <h2 class="text-3xl sm:text-4xl font-display text-charcoal mb-8">Our favorite people</h2>
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center">
-            <div class="w-20 h-20 rounded-xl placeholder-img"></div>
+          <div class="p-4 bg-white/80 rounded-2xl shadow-sm border border-blush/50 flex gap-4 items-center">
+            <div class="w-20 h-20 rounded-xl placeholder-img shrink-0"></div>
             <div>
-              <p class="font-semibold text-slate-900">[redacted]</p>
-              <p class="text-sm text-slate-600">Maid of Honor</p>
+              <p class="font-semibold text-charcoal">[redacted]</p>
+              <p class="text-sm text-charcoal/70">Maid of Honor</p>
             </div>
           </div>
-          <div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center">
-            <div class="w-20 h-20 rounded-xl placeholder-img"></div>
+          <div class="p-4 bg-white/80 rounded-2xl shadow-sm border border-blush/50 flex gap-4 items-center">
+            <div class="w-20 h-20 rounded-xl placeholder-img shrink-0"></div>
             <div>
-              <p class="font-semibold text-slate-900">[redacted]</p>
-              <p class="text-sm text-slate-600">Best Man</p>
+              <p class="font-semibold text-charcoal">[redacted]</p>
+              <p class="text-sm text-charcoal/70">Best Man</p>
             </div>
           </div>
-          <div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center">
-            <div class="w-20 h-20 rounded-xl placeholder-img"></div>
+          <div class="p-4 bg-white/80 rounded-2xl shadow-sm border border-blush/50 flex gap-4 items-center">
+            <div class="w-20 h-20 rounded-xl placeholder-img shrink-0"></div>
             <div>
-              <p class="font-semibold text-slate-900">[redacted]</p>
-              <p class="text-sm text-slate-600">Bridesmaid</p>
+              <p class="font-semibold text-charcoal">[redacted]</p>
+              <p class="text-sm text-charcoal/70">Bridesmaid</p>
             </div>
           </div>
-          <div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center">
-            <div class="w-20 h-20 rounded-xl placeholder-img"></div>
+          <div class="p-4 bg-white/80 rounded-2xl shadow-sm border border-blush/50 flex gap-4 items-center">
+            <div class="w-20 h-20 rounded-xl placeholder-img shrink-0"></div>
             <div>
-              <p class="font-semibold text-slate-900">[redacted]</p>
-              <p class="text-sm text-slate-600">Groomsman</p>
+              <p class="font-semibold text-charcoal">[redacted]</p>
+              <p class="text-sm text-charcoal/70">Groomsman</p>
             </div>
           </div>
-          <div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center">
-            <div class="w-20 h-20 rounded-xl placeholder-img"></div>
+          <div class="p-4 bg-white/80 rounded-2xl shadow-sm border border-blush/50 flex gap-4 items-center">
+            <div class="w-20 h-20 rounded-xl placeholder-img shrink-0"></div>
             <div>
-              <p class="font-semibold text-slate-900">[redacted]</p>
-              <p class="text-sm text-slate-600">Bridesmaid</p>
+              <p class="font-semibold text-charcoal">[redacted]</p>
+              <p class="text-sm text-charcoal/70">Bridesmaid</p>
             </div>
           </div>
-          <div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center">
-            <div class="w-20 h-20 rounded-xl placeholder-img"></div>
+          <div class="p-4 bg-white/80 rounded-2xl shadow-sm border border-blush/50 flex gap-4 items-center">
+            <div class="w-20 h-20 rounded-xl placeholder-img shrink-0"></div>
             <div>
-              <p class="font-semibold text-slate-900">[redacted]</p>
-              <p class="text-sm text-slate-600">Groomsman</p>
+              <p class="font-semibold text-charcoal">[redacted]</p>
+              <p class="text-sm text-charcoal/70">Groomsman</p>
             </div>
           </div>
-          <div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center">
-            <div class="w-20 h-20 rounded-xl placeholder-img"></div>
+          <div class="p-4 bg-white/80 rounded-2xl shadow-sm border border-blush/50 flex gap-4 items-center">
+            <div class="w-20 h-20 rounded-xl placeholder-img shrink-0"></div>
             <div>
-              <p class="font-semibold text-slate-900">[redacted]</p>
-              <p class="text-sm text-slate-600">Bridesman</p>
+              <p class="font-semibold text-charcoal">[redacted]</p>
+              <p class="text-sm text-charcoal/70">Bridesman</p>
             </div>
           </div>
-          <div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center">
-            <div class="w-20 h-20 rounded-xl placeholder-img"></div>
+          <div class="p-4 bg-white/80 rounded-2xl shadow-sm border border-blush/50 flex gap-4 items-center">
+            <div class="w-20 h-20 rounded-xl placeholder-img shrink-0"></div>
             <div>
-              <p class="font-semibold text-slate-900">[redacted]</p>
-              <p class="text-sm text-slate-600">Groomsman</p>
+              <p class="font-semibold text-charcoal">[redacted]</p>
+              <p class="text-sm text-charcoal/70">Groomsman</p>
             </div>
           </div>
-          <div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center">
-            <div class="w-20 h-20 rounded-xl placeholder-img"></div>
+          <div class="p-4 bg-white/80 rounded-2xl shadow-sm border border-blush/50 flex gap-4 items-center">
+            <div class="w-20 h-20 rounded-xl placeholder-img shrink-0"></div>
             <div>
-              <p class="font-semibold text-slate-900">[redacted]</p>
-              <p class="text-sm text-slate-600">Bridesmaid</p>
+              <p class="font-semibold text-charcoal">[redacted]</p>
+              <p class="text-sm text-charcoal/70">Bridesmaid</p>
             </div>
           </div>
-          <div class="p-4 bg-white rounded-2xl shadow-sm border border-slate-100 flex gap-4 items-center">
-            <div class="w-20 h-20 rounded-xl placeholder-img"></div>
+          <div class="p-4 bg-white/80 rounded-2xl shadow-sm border border-blush/50 flex gap-4 items-center">
+            <div class="w-20 h-20 rounded-xl placeholder-img shrink-0"></div>
             <div>
-              <p class="font-semibold text-slate-900">[redacted]</p>
-              <p class="text-sm text-slate-600">Groomsman</p>
+              <p class="font-semibold text-charcoal">[redacted]</p>
+              <p class="text-sm text-charcoal/70">Groomsman</p>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Schedule -->
+    <section id="schedule" class="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
+      <p class="uppercase tracking-[0.25em] text-xs text-lavender">Schedule</p>
+      <h2 class="text-3xl sm:text-4xl font-display text-charcoal mb-10">Day of timeline</h2>
+      <div class="max-w-2xl space-y-6">
+        <div class="flex gap-6 items-start">
+          <div class="w-24 shrink-0 font-semibold text-magenta">3:00 PM</div>
+          <div>
+            <h3 class="font-semibold text-charcoal">Guests arrive</h3>
+            <p class="text-charcoal/80 text-sm mt-1">Please arrive and find your seat before the ceremony begins.</p>
+          </div>
+        </div>
+        <div class="flex gap-6 items-start">
+          <div class="w-24 shrink-0 font-semibold text-magenta">3:30 PM</div>
+          <div>
+            <h3 class="font-semibold text-charcoal">Ceremony</h3>
+            <p class="text-charcoal/80 text-sm mt-1">We say &ldquo;I do.&rdquo;</p>
+          </div>
+        </div>
+        <div class="flex gap-6 items-start">
+          <div class="w-24 shrink-0 font-semibold text-magenta">4:30 PM</div>
+          <div>
+            <h3 class="font-semibold text-charcoal">Cocktail hour</h3>
+            <p class="text-charcoal/80 text-sm mt-1">Drinks and mingling.</p>
+          </div>
+        </div>
+        <div class="flex gap-6 items-start">
+          <div class="w-24 shrink-0 font-semibold text-magenta">6:00 PM</div>
+          <div>
+            <h3 class="font-semibold text-charcoal">Dinner &amp; dancing</h3>
+            <p class="text-charcoal/80 text-sm mt-1">Celebrate with us into the night.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Travel & Stay -->
+    <section id="travel" class="bg-blush/30 py-16 sm:py-20">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <p class="uppercase tracking-[0.25em] text-xs text-lavender">Travel &amp; Stay</p>
+        <h2 class="text-3xl sm:text-4xl font-display text-charcoal mb-8">Getting there</h2>
+        <div class="grid md:grid-cols-2 gap-8">
+          <div class="space-y-4">
+            <h3 class="font-semibold text-charcoal text-lg">Venue</h3>
+            <p class="text-charcoal/90">Marysville, Ohio</p>
+            <p class="text-charcoal/80 text-sm">Address and directions will be provided on your invitation.</p>
+            <h3 class="font-semibold text-charcoal text-lg mt-6">Parking</h3>
+            <p class="text-charcoal/90">Parking is available in the field adjacent to the driveway. Please follow the signs to the parking area.</p>
+          </div>
+          <div class="space-y-4">
+            <h3 class="font-semibold text-charcoal text-lg">Where to stay</h3>
+            <p class="text-charcoal/90">We recommend booking accommodations in Marysville or nearby Dublin/Columbus. Block details coming soon.</p>
+            <h3 class="font-semibold text-charcoal text-lg mt-6">Airports</h3>
+            <p class="text-charcoal/90">Columbus John Glenn International (CMH) is the nearest airport, about 45 minutes from Marysville.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Events -->
+    <section id="events" class="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
+      <p class="uppercase tracking-[0.25em] text-xs text-lavender">Events</p>
+      <h2 class="text-3xl sm:text-4xl font-display text-charcoal mb-8">Weekend festivities</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="p-6 bg-white/80 rounded-2xl border border-blush/50">
+          <h3 class="font-semibold text-charcoal text-lg">Rehearsal dinner</h3>
+          <p class="text-charcoal/80 mt-1">Friday, September 4, 2026</p>
+          <p class="text-charcoal/80 text-sm mt-2">Details to follow. Invited guests will receive separate information.</p>
+        </div>
+        <div class="p-6 bg-white/80 rounded-2xl border border-blush/50">
+          <h3 class="font-semibold text-charcoal text-lg">Farewell brunch</h3>
+          <p class="text-charcoal/80 mt-1">Sunday, September 6, 2026</p>
+          <p class="text-charcoal/80 text-sm mt-2">Join us for a casual send-off. Time and location TBD.</p>
         </div>
       </div>
     </section>
 
     <!-- Q&A -->
-    <section id="qa" class="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
-      <p class="uppercase tracking-[0.25em] text-xs text-rose-500">Q &amp; A</p>
-      <h2 class="text-3xl font-display text-slate-900 mb-6">Details &amp; logistics</h2>
-      <div class="divide-y divide-slate-200 border border-slate-200 rounded-2xl bg-white">
-        <details class="p-4" open>
-          <summary class="flex justify-between items-center cursor-pointer font-semibold text-slate-900">What time should I arrive? <span class="text-rose-500">+</span></summary>
-          <p class="mt-2 text-slate-700">Please arrive by 3:00 PM to be seated before the ceremony begins at 3:30 PM.</p>
-        </details>
-        <details class="p-4">
-          <summary class="flex justify-between items-center cursor-pointer font-semibold text-slate-900">Is there a dress code? <span class="text-rose-500">+</span></summary>
-          <p class="mt-2 text-slate-700">Dress is dressy casual. We'll be outside so please dress for the weather.</p>
-        </details>
-        <details class="p-4">
-          <summary class="flex justify-between items-center cursor-pointer font-semibold text-slate-900">Where do I park? <span class="text-rose-500">+</span></summary>
-          <p class="mt-2 text-slate-700">Parking is available in the field adjacent to the driveway. Please follow the signs to the parking area.</p>
-        </details>
-        <details class="p-4">
-          <summary class="flex justify-between items-center cursor-pointer font-semibold text-slate-900">Can I bring a plus-one? <span class="text-rose-500">+</span></summary>
-          <p class="mt-2 text-slate-700">We have planned seating carefully; please refer to your invitation for plus-one details.</p>
-        </details>
-      </div>
-    </section>
-
-    <!-- Registry -->
-    <section id="registry" class="bg-slate-50 py-16 sm:py-20">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-4">
-        <p class="uppercase tracking-[0.25em] text-xs text-rose-500">Registry</p>
-        <h2 class="text-3xl font-display text-slate-900">Your presence is the best gift</h2>
-        <p class="text-slate-700">If you'd like to view our registries, please explore the links below.</p>
-        <div class="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
-          <a class="px-5 py-3 rounded-full bg-white border border-slate-200 shadow-sm hover:border-rose-200" href="#">Registry Placeholder 1</a>
-          <a class="px-5 py-3 rounded-full bg-white border border-slate-200 shadow-sm hover:border-rose-200" href="#">Registry Placeholder 2</a>
-          <a class="px-5 py-3 rounded-full bg-white border border-slate-200 shadow-sm hover:border-rose-200" href="#">Registry Placeholder 3</a>
+    <section id="qa" class="bg-blush/20 py-16 sm:py-20">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <p class="uppercase tracking-[0.25em] text-xs text-lavender">Q &amp; A</p>
+        <h2 class="text-3xl sm:text-4xl font-display text-charcoal mb-6">Details &amp; logistics</h2>
+        <div class="divide-y divide-blush/60 border border-blush/50 rounded-2xl bg-white/80 max-w-3xl">
+          <details class="p-4" open>
+            <summary class="flex justify-between items-center cursor-pointer font-semibold text-charcoal">What time should I arrive? <span class="text-magenta">+</span></summary>
+            <p class="mt-2 text-charcoal/90">Please arrive by 3:00 PM to be seated before the ceremony begins at 3:30 PM.</p>
+          </details>
+          <details class="p-4">
+            <summary class="flex justify-between items-center cursor-pointer font-semibold text-charcoal">Is there a dress code? <span class="text-magenta">+</span></summary>
+            <p class="mt-2 text-charcoal/90">Dress is dressy casual. We'll be outside so please dress for the weather.</p>
+          </details>
+          <details class="p-4">
+            <summary class="flex justify-between items-center cursor-pointer font-semibold text-charcoal">Where do I park? <span class="text-magenta">+</span></summary>
+            <p class="mt-2 text-charcoal/90">Parking is available in the field adjacent to the driveway. Please follow the signs to the parking area.</p>
+          </details>
+          <details class="p-4">
+            <summary class="flex justify-between items-center cursor-pointer font-semibold text-charcoal">Can I bring a plus-one? <span class="text-magenta">+</span></summary>
+            <p class="mt-2 text-charcoal/90">We have planned seating carefully; please refer to your invitation for plus-one details.</p>
+          </details>
         </div>
-      </div>
-    </section>
-
-    <!-- RSVP -->
-    <section id="rsvp" class="max-w-4xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
-      <div class="text-center mb-6">
-        <p class="uppercase tracking-[0.25em] text-xs text-rose-500">RSVP</p>
-        <h2 class="text-3xl font-display text-slate-900">Let us know you'll be there</h2>
-      </div>
-      <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 sm:p-8 space-y-6" id="rsvp-app">
-        <div id="rsvp-stepper" class="flex flex-wrap gap-2 text-sm font-medium text-slate-600"></div>
-        <div id="rsvp-body" class="space-y-4"></div>
-        <div class="flex justify-between items-center pt-2">
-          <button id="rsvp-prev" class="px-4 py-2 rounded-full border border-slate-200 text-slate-700 disabled:opacity-50" disabled>Back</button>
-          <button id="rsvp-next" class="px-5 py-2 rounded-full bg-rose-600 text-white font-semibold hover:bg-rose-500">Next</button>
-        </div>
-        <p id="rsvp-status" class="text-sm text-slate-600"></p>
       </div>
     </section>
   </main>
 
-  <footer class="border-t border-slate-200 py-8 text-center text-sm text-slate-500 bg-white">
+  <footer class="border-t border-blush/60 py-8 text-center text-sm text-charcoal/70 bg-wedding-bg">
     <p>We're so excited to celebrate with you in Marysville.</p>
   </footer>
 
-  <script src="./scripts/main.js"></script>
+  <script>
+    (function() {
+      var header = document.getElementById('site-header');
+      var hero = document.getElementById('home');
+      function updateNav() {
+        var heroBottom = hero ? hero.offsetTop + hero.offsetHeight : window.innerHeight;
+        var threshold = heroBottom - 80;
+        if (window.scrollY < threshold) {
+          header.classList.add('nav-light');
+        } else {
+          header.classList.remove('nav-light');
+        }
+      }
+      window.addEventListener('scroll', function() { updateNav(); }, { passive: true });
+      window.addEventListener('resize', updateNav);
+      updateNav();
+    })();
+  </script>
 </body>
 </html>

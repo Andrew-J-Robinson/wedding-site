@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registry — Our Wedding</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            charcoal: 'var(--color-charcoal)',
+            lavender: 'var(--color-lavender)',
+            blush: 'var(--color-blush)',
+            magenta: 'var(--color-magenta)',
+            'wedding-bg': 'var(--color-bg)',
+          },
+          fontFamily: {
+            display: ['Cormorant Garamond', 'Georgia', 'serif'],
+            body: ['Lora', 'Georgia', 'serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    :root {
+      --color-charcoal: #2a2a2a;
+      --color-lavender: #8770b8;
+      --color-blush: #f7dbd8;
+      --color-magenta: #c6195a;
+      --color-bg: #fdf8f7;
+    }
+    body { font-family: 'Lora', Georgia, serif; }
+    h1, h2, h3, .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  </style>
+</head>
+<body class="bg-wedding-bg text-charcoal min-h-screen">
+  <header class="border-b border-blush/60">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
+      <a href="/" class="font-display text-lg text-charcoal hover:text-magenta transition">A &amp; M</a>
+      <a href="/" class="text-sm text-charcoal/80 hover:text-magenta transition">Back to site</a>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
+    <div class="text-center space-y-4">
+      <p class="uppercase tracking-[0.25em] text-xs text-lavender">Registry</p>
+      <h1 class="text-3xl sm:text-4xl font-display text-charcoal">Your presence is the best gift</h1>
+      <p class="text-charcoal/90">If you'd like to view our registries, please explore the links below.</p>
+      <div class="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 pt-4">
+        <a class="px-6 py-3 rounded-full bg-white/80 border border-blush/60 shadow-sm hover:border-magenta/40 hover:bg-white transition" href="#">Registry Placeholder 1</a>
+        <a class="px-6 py-3 rounded-full bg-white/80 border border-blush/60 shadow-sm hover:border-magenta/40 hover:bg-white transition" href="#">Registry Placeholder 2</a>
+        <a class="px-6 py-3 rounded-full bg-white/80 border border-blush/60 shadow-sm hover:border-magenta/40 hover:bg-white transition" href="#">Registry Placeholder 3</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="border-t border-blush/60 py-6 text-center text-sm text-charcoal/70 bg-wedding-bg">
+    <p>We're so excited to celebrate with you.</p>
+  </footer>
+</body>
+</html>

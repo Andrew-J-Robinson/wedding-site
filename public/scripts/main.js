@@ -1,4 +1,6 @@
 (() => {
+  if (!document.getElementById('rsvp-app')) return;
+
   const steps = [
     'Enter Full Name',
     'Search Guest List',
@@ -29,13 +31,13 @@
     stepperEl.innerHTML = steps
       .map((label, idx) => {
         const active = idx === state.step;
-        return `<div class="px-3 py-1 rounded-full border ${active ? 'border-rose-500 text-rose-600 bg-rose-50' : 'border-slate-200 text-slate-600'}">${idx + 1}. ${label}</div>`;
+        return `<div class="px-3 py-1 rounded-full border ${active ? 'border-magenta text-magenta bg-blush/40' : 'border-blush/60 text-charcoal/70'}">${idx + 1}. ${label}</div>`;
       })
       .join('');
   };
 
   const setStatus = (message, tone = 'info') => {
-    const color = tone === 'error' ? 'text-rose-600' : tone === 'success' ? 'text-emerald-600' : 'text-slate-600';
+    const color = tone === 'error' ? 'text-magenta' : tone === 'success' ? 'text-emerald-600' : 'text-charcoal/70';
     statusEl.className = `text-sm ${color}`;
     statusEl.textContent = message;
   };
@@ -50,9 +52,9 @@
       case 0:
         bodyEl.innerHTML = `
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-slate-700">Full Name</label>
-            <input id="rsvp-name" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-100" placeholder="Enter the name on your invite" value="${state.name}" />
-            <p class="text-xs text-slate-500">We'll use this to find your invitation.</p>
+            <label class="block text-sm font-medium text-charcoal">Full Name</label>
+            <input id="rsvp-name" class="w-full px-4 py-3 rounded-xl border border-blush/60 focus:border-magenta focus:ring-2 focus:ring-blush/60" placeholder="Enter the name on your invite" value="${state.name}" />
+            <p class="text-xs text-charcoal/70">We'll use this to find your invitation.</p>
           </div>
         `;
         break;
@@ -63,17 +65,17 @@
         }
         bodyEl.innerHTML = `
           <div class="space-y-3">
-            <p class="text-sm text-slate-600">Select your name from the list below.</p>
+            <p class="text-sm text-charcoal/70">Select your name from the list below.</p>
             <div class="space-y-2">
               ${state.matches
                 .map(
                   (m) => `
-                    <button data-id="${m.id}" class="w-full flex items-center justify-between px-4 py-3 border rounded-xl hover:border-rose-300 ${state.selectedGuest && state.selectedGuest.id === m.id ? 'border-rose-500 bg-rose-50' : 'border-slate-200'}">
+                    <button data-id="${m.id}" class="w-full flex items-center justify-between px-4 py-3 border rounded-xl hover:border-magenta/40 ${state.selectedGuest && state.selectedGuest.id === m.id ? 'border-magenta bg-blush/40' : 'border-blush/60'}">
                       <span class="text-left">
-                        <span class="font-semibold text-slate-900 block">${m.name}</span>
-                        ${m.party ? `<span class="text-xs text-slate-500">Party size: ${m.party}</span>` : ''}
+                        <span class="font-semibold text-charcoal block">${m.name}</span>
+                        ${m.party ? `<span class="text-xs text-charcoal/70">Party size: ${m.party}</span>` : ''}
                       </span>
-                      <span class="text-sm text-rose-600">Select</span>
+                      <span class="text-sm text-magenta">Select</span>
                     </button>
                   `
                 )
@@ -93,10 +95,10 @@
       case 2:
         bodyEl.innerHTML = `
           <div class="space-y-2">
-            <p class="text-sm text-slate-600">Confirm this is you:</p>
-            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50">
-              <p class="font-semibold text-slate-900">${state.selectedGuest ? state.selectedGuest.name : 'No guest selected'}</p>
-              ${state.selectedGuest?.party ? `<p class="text-sm text-slate-600">Party size on file: ${state.selectedGuest.party}</p>` : ''}
+            <p class="text-sm text-charcoal/70">Confirm this is you:</p>
+            <div class="p-4 rounded-xl border border-blush/60 bg-blush/20">
+              <p class="font-semibold text-charcoal">${state.selectedGuest ? state.selectedGuest.name : 'No guest selected'}</p>
+              ${state.selectedGuest?.party ? `<p class="text-sm text-charcoal/70">Party size on file: ${state.selectedGuest.party}</p>` : ''}
             </div>
           </div>
         `;
@@ -104,12 +106,12 @@
       case 3:
         bodyEl.innerHTML = `
           <div class="space-y-3">
-            <p class="text-sm text-slate-600">Will you be joining us?</p>
+            <p class="text-sm text-charcoal/70">Will you be joining us?</p>
             <div class="grid sm:grid-cols-3 gap-3">
               ${['yes', 'no', 'maybe']
                 .map(
                   (val) => `
-                    <button data-rsvp="${val}" class="px-4 py-3 rounded-xl border ${state.rsvp === val ? 'border-rose-500 bg-rose-50 text-rose-700' : 'border-slate-200'} hover:border-rose-300 capitalize">${val}</button>
+                    <button data-rsvp="${val}" class="px-4 py-3 rounded-xl border ${state.rsvp === val ? 'border-magenta bg-blush/40 text-magenta' : 'border-blush/60'} hover:border-magenta/40 capitalize">${val}</button>
                   `
                 )
                 .join('')}
@@ -126,16 +128,16 @@
       case 4:
         bodyEl.innerHTML = `
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-slate-700">Food allergies or dietary needs</label>
-            <textarea id="rsvp-allergies" rows="3" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-100" placeholder="Let us know any allergies or dietary preferences">${state.allergies}</textarea>
+            <label class="block text-sm font-medium text-charcoal">Food allergies or dietary needs</label>
+            <textarea id="rsvp-allergies" rows="3" class="w-full px-4 py-3 rounded-xl border border-blush/60 focus:border-magenta focus:ring-2 focus:ring-blush/60" placeholder="Let us know any allergies or dietary preferences">${state.allergies}</textarea>
           </div>
         `;
         break;
       case 5:
         bodyEl.innerHTML = `
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-slate-700">Note to the couple (optional)</label>
-            <textarea id="rsvp-note" rows="3" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-100" placeholder="Share a message or song request">${state.note}</textarea>
+            <label class="block text-sm font-medium text-charcoal">Note to the couple (optional)</label>
+            <textarea id="rsvp-note" rows="3" class="w-full px-4 py-3 rounded-xl border border-blush/60 focus:border-magenta focus:ring-2 focus:ring-blush/60" placeholder="Share a message or song request">${state.note}</textarea>
           </div>
         `;
         break;
@@ -252,6 +254,5 @@
     renderStep();
   });
 
-  // Initial render
   renderStep();
 })();

@@ -106,9 +106,15 @@ app.get('/api/rsvps', requireAuth, async (_req, res) => {
   res.json({ results: data });
 });
 
-// Serve admin page route explicitly
+// Serve page routes explicitly for clean URLs
 app.get('/admin', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+app.get('/rsvp', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'rsvp.html'));
+});
+app.get('/registry', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'registry.html'));
 });
 
 app.listen(PORT, () => {
