@@ -22,6 +22,9 @@
             'wedding-bg': 'var(--color-bg)',
             surface: 'var(--color-surface)',
             'surface-hover': 'var(--color-surface-hover)',
+            subtle: 'var(--color-bg-subtle)',
+            'pre-bg': 'var(--color-pre-bg)',
+            'pre-text': 'var(--color-pre-text)',
           },
           fontFamily: {
             display: ['Cormorant Garamond', 'Georgia', 'serif'],
@@ -35,9 +38,10 @@
     body { font-family: 'Lora', Georgia, serif; }
     h1, h2, h3, .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
     .placeholder-img { background: repeating-linear-gradient(45deg, var(--color-blush), var(--color-blush) 10px, var(--color-placeholder-stripe) 10px, var(--color-placeholder-stripe) 20px); }
+    [data-tab-panel]:not(.active) { display: none; }
   </style>
 </head>
-<body class="bg-blush/20 text-charcoal">
+<body class="bg-subtle text-charcoal">
   <header class="bg-surface border-b border-blush/60 py-4">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between">
       <h1 class="text-2xl font-display text-charcoal">Wedding Admin</h1>
@@ -45,8 +49,8 @@
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-10 space-y-8">
-    <section id="admin-login" class="bg-surface border border-blush/50 rounded-2xl shadow-sm p-6 space-y-4">
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+    <section id="admin-login" class="bg-surface border border-blush/50 rounded-2xl shadow-sm p-6 space-y-4 max-w-md">
       <h2 class="text-xl font-semibold text-charcoal">Admin Login</h2>
       <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
         <input id="admin-password" type="password" class="flex-1 px-4 py-3 rounded-xl border border-blush/60 focus:border-magenta focus:ring-2 focus:ring-blush/60" placeholder="Enter admin password" />
@@ -55,66 +59,215 @@
       <p id="admin-login-status" class="text-sm text-charcoal/70"></p>
     </section>
 
-    <section id="admin-panels" class="space-y-6 hidden">
-      <div class="grid lg:grid-cols-2 gap-6">
-        <section class="bg-surface border border-blush/50 rounded-2xl shadow-sm p-6 space-y-4">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <h3 class="text-lg font-semibold text-charcoal">Upload Invitee List</h3>
-              <p class="text-sm text-charcoal/70">Upload CSV or JSON (name, party, contact).</p>
-            </div>
-            <button id="admin-save-invitees" class="px-4 py-2 rounded-xl bg-magenta text-white font-semibold hover:bg-magenta/90 transition">Save List</button>
-          </div>
-          <div class="space-y-3">
-            <input id="admin-file" type="file" accept=".csv,.json" class="block text-sm text-charcoal/70" />
-            <textarea id="admin-raw" rows="8" class="w-full px-4 py-3 rounded-xl border border-blush/60 focus:border-magenta focus:ring-2 focus:ring-blush/60" placeholder='Or paste JSON array here'></textarea>
-            <div class="text-sm text-charcoal/70">Preview</div>
-            <pre id="admin-preview" class="bg-charcoal text-blush/90 text-xs p-4 rounded-xl h-48 overflow-auto">[]</pre>
-          </div>
-          <p id="admin-upload-status" class="text-sm text-charcoal/70"></p>
-        </section>
+    <section id="admin-panels" class="hidden">
+      <nav class="flex flex-wrap gap-2 border-b border-blush/60 pb-4 mb-6">
+        <button type="button" data-tab="guests" class="admin-tab px-4 py-2 rounded-xl font-medium transition border border-blush/60 hover:border-magenta/40">Guests</button>
+        <button type="button" data-tab="rsvp-controls" class="admin-tab px-4 py-2 rounded-xl font-medium transition border border-blush/60 hover:border-magenta/40">RSVP Controls</button>
+        <button type="button" data-tab="checklist" class="admin-tab px-4 py-2 rounded-xl font-medium transition border border-blush/60 hover:border-magenta/40">Checklist</button>
+        <button type="button" data-tab="vendors" class="admin-tab px-4 py-2 rounded-xl font-medium transition border border-blush/60 hover:border-magenta/40">Vendors</button>
+      </nav>
 
+      <!-- Guests -->
+      <div id="panel-guests" data-tab-panel class="space-y-6 active">
+        <div class="grid lg:grid-cols-2 gap-6">
+          <section class="bg-surface border border-blush/50 rounded-2xl shadow-sm p-6 space-y-4">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <h3 class="text-lg font-semibold text-charcoal">Add / Import Guests</h3>
+              <div class="flex gap-2">
+                <button id="households-open-btn" class="px-3 py-1.5 rounded-xl border border-blush/60 hover:border-magenta/40 text-sm">Households</button>
+              </div>
+            </div>
+            <p class="text-sm text-charcoal/70">Add one guest or import from CSV/JSON (name, householdId, contact, invitedEventIds, notes, dietaryRestrictions, gift, thankYouSent).</p>
+            <div class="space-y-3">
+              <div class="flex gap-2 flex-wrap">
+                <button id="guests-add-btn" class="px-4 py-2 rounded-xl bg-magenta text-white font-semibold hover:bg-magenta/90 transition">Add guest</button>
+                <input id="guests-file" type="file" accept=".csv,.json" class="block text-sm text-charcoal/70 max-w-[200px]" />
+              </div>
+              <textarea id="guests-raw" rows="6" class="w-full px-4 py-3 rounded-xl border border-blush/60 focus:border-magenta focus:ring-2 focus:ring-blush/60 text-sm" placeholder='Or paste JSON array: [{ "name": "Jane", "contact": "jane@example.com" }]'></textarea>
+              <pre id="guests-preview" class="bg-pre-bg text-pre-text text-xs p-4 rounded-xl max-h-40 overflow-auto">[]</pre>
+              <button id="guests-save-import" class="px-4 py-2 rounded-xl border border-magenta text-magenta font-semibold hover:bg-magenta/10 transition">Save / Import list</button>
+            </div>
+            <p id="guests-import-status" class="text-sm text-charcoal/70"></p>
+          </section>
+          <section class="bg-surface border border-blush/50 rounded-2xl shadow-sm p-6 space-y-4">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <h3 class="text-lg font-semibold text-charcoal">RSVP overview</h3>
+              <div class="flex gap-2">
+                <select id="guests-rsvp-event" class="px-3 py-2 rounded-xl border border-blush/60 text-sm bg-surface"></select>
+                <button id="guests-refresh-rsvp" class="px-3 py-2 rounded-xl border border-blush/60 hover:border-magenta/40 text-sm transition">Refresh</button>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-center text-sm">
+              <div class="p-3 rounded-xl bg-blush/40 text-magenta"><span class="font-semibold" id="count-yes">0</span> Yes</div>
+              <div class="p-3 rounded-xl bg-amber-50 text-amber-700 dark:bg-blush/30 dark:text-charcoal/90"><span class="font-semibold" id="count-maybe">0</span> Maybe</div>
+              <div class="p-3 rounded-xl bg-blush/30 text-charcoal/80"><span class="font-semibold" id="count-no">0</span> No</div>
+            </div>
+            <div class="overflow-auto border border-blush/50 rounded-xl max-h-64">
+              <table class="min-w-full text-sm">
+                <thead class="bg-blush/30 text-charcoal sticky top-0">
+                  <tr>
+                    <th class="text-left px-3 py-2">Name</th>
+                    <th class="text-left px-3 py-2">RSVP</th>
+                    <th class="text-left px-3 py-2">Headcount</th>
+                    <th class="text-left px-3 py-2">Allergies</th>
+                    <th class="text-left px-3 py-2">Note</th>
+                    <th class="text-left px-3 py-2">Time</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-rsvp-rows" class="divide-y divide-blush/40"></tbody>
+              </table>
+            </div>
+            <p id="admin-rsvp-status" class="text-sm text-charcoal/70"></p>
+          </section>
+        </div>
         <section class="bg-surface border border-blush/50 rounded-2xl shadow-sm p-6 space-y-4">
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="text-lg font-semibold text-charcoal">RSVP Responses</h3>
-              <p class="text-sm text-charcoal/70">Live overview of submissions.</p>
-            </div>
-            <button id="admin-refresh" class="px-3 py-2 rounded-xl border border-blush/60 hover:border-magenta/40 text-sm transition">Refresh</button>
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <h3 class="text-lg font-semibold text-charcoal">Guest list</h3>
+            <button id="guests-refresh-list" class="px-3 py-2 rounded-xl border border-blush/60 hover:border-magenta/40 text-sm transition">Refresh</button>
           </div>
-          <div class="grid grid-cols-3 gap-3 text-center text-sm">
-            <div class="p-3 rounded-xl bg-blush/40 text-magenta">
-              <div class="font-semibold" id="count-yes">0</div>
-              <div>Yes</div>
+          <div class="overflow-auto border border-blush/50 rounded-xl max-h-96">
+            <table class="min-w-full text-sm">
+              <thead class="bg-blush/30 text-charcoal sticky top-0">
+                <tr>
+                  <th class="text-left px-3 py-2">Name</th>
+                  <th class="text-left px-3 py-2">Household</th>
+                  <th class="text-left px-3 py-2">Events</th>
+                  <th class="text-left px-3 py-2">Contact</th>
+                  <th class="text-left px-3 py-2">Dietary</th>
+                  <th class="text-left px-3 py-2">Gift</th>
+                  <th class="text-left px-3 py-2">Thank you</th>
+                  <th class="text-left px-3 py-2">Notes</th>
+                  <th class="text-left px-3 py-2 w-20">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="guests-tbody" class="divide-y divide-blush/40"></tbody>
+            </table>
+          </div>
+          <p id="guests-list-status" class="text-sm text-charcoal/70"></p>
+        </section>
+      </div>
+
+      <!-- RSVP Controls -->
+      <div id="panel-rsvp-controls" data-tab-panel class="space-y-6">
+        <section class="bg-surface border border-blush/50 rounded-2xl shadow-sm p-6 space-y-4 max-w-xl">
+          <h3 class="text-lg font-semibold text-charcoal">RSVP collection</h3>
+          <p class="text-sm text-charcoal/70">Master switch: when off, the public RSVP form will not accept submissions.</p>
+          <div class="flex items-center gap-3">
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="rsvp-global-toggle" class="sr-only peer" />
+              <div class="w-11 h-6 bg-blush/60 rounded-full peer peer-checked:bg-magenta peer-focus:ring-2 peer-focus:ring-blush/60"></div>
+              <span class="ml-3 text-sm font-medium text-charcoal">RSVP collection on</span>
+            </label>
+          </div>
+          <p id="rsvp-settings-status" class="text-sm text-charcoal/70"></p>
+        </section>
+        <section class="bg-surface border border-blush/50 rounded-2xl shadow-sm p-6 space-y-4">
+          <h3 class="text-lg font-semibold text-charcoal">Per-event RSVP</h3>
+          <p class="text-sm text-charcoal/70">Turn RSVP on or off for each event. Guests see and submit for events where RSVP is open.</p>
+          <ul id="rsvp-events-list" class="space-y-3"></ul>
+          <p id="rsvp-events-status" class="text-sm text-charcoal/70"></p>
+        </section>
+      </div>
+
+      <!-- Checklist -->
+      <div id="panel-checklist" data-tab-panel class="space-y-6">
+        <section class="bg-surface border border-blush/50 rounded-2xl shadow-sm p-6 space-y-4">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <h3 class="text-lg font-semibold text-charcoal">Wedding checklist</h3>
+            <div class="flex gap-2">
+              <input id="checklist-new-title" type="text" class="px-4 py-2 rounded-xl border border-blush/60 text-sm w-48" placeholder="New task..." />
+              <button id="checklist-add" class="px-4 py-2 rounded-xl bg-magenta text-white font-semibold hover:bg-magenta/90 transition">Add</button>
             </div>
-            <div class="p-3 rounded-xl bg-amber-50 text-amber-700">
-              <div class="font-semibold" id="count-maybe">0</div>
-              <div>Maybe</div>
-            </div>
-            <div class="p-3 rounded-xl bg-blush/30 text-charcoal/80">
-              <div class="font-semibold" id="count-no">0</div>
-              <div>No</div>
-            </div>
+          </div>
+          <p class="text-sm text-charcoal/70">Drag to reorder; check off when done.</p>
+          <ul id="checklist-list" class="space-y-2"></ul>
+          <p id="checklist-status" class="text-sm text-charcoal/70"></p>
+        </section>
+      </div>
+
+      <!-- Vendors -->
+      <div id="panel-vendors" data-tab-panel class="space-y-6">
+        <section class="bg-surface border border-blush/50 rounded-2xl shadow-sm p-6 space-y-4">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <h3 class="text-lg font-semibold text-charcoal">Vendors</h3>
+            <button id="vendors-add-btn" class="px-4 py-2 rounded-xl bg-magenta text-white font-semibold hover:bg-magenta/90 transition">Add vendor</button>
           </div>
           <div class="overflow-auto border border-blush/50 rounded-xl">
             <table class="min-w-full text-sm">
               <thead class="bg-blush/30 text-charcoal">
                 <tr>
                   <th class="text-left px-3 py-2">Name</th>
-                  <th class="text-left px-3 py-2">RSVP</th>
-                  <th class="text-left px-3 py-2">Allergies</th>
-                  <th class="text-left px-3 py-2">Note</th>
-                  <th class="text-left px-3 py-2">Time</th>
+                  <th class="text-left px-3 py-2">Category</th>
+                  <th class="text-left px-3 py-2">Email</th>
+                  <th class="text-left px-3 py-2">Phone</th>
+                  <th class="text-left px-3 py-2">Notes</th>
+                  <th class="text-left px-3 py-2 w-24">Actions</th>
                 </tr>
               </thead>
-              <tbody id="admin-rsvp-rows" class="divide-y divide-blush/40"></tbody>
+              <tbody id="vendors-tbody" class="divide-y divide-blush/40"></tbody>
             </table>
           </div>
-          <p id="admin-rsvp-status" class="text-sm text-charcoal/70"></p>
+          <p id="vendors-status" class="text-sm text-charcoal/70"></p>
         </section>
       </div>
     </section>
   </main>
+
+  <!-- Households modal -->
+  <div id="households-modal" class="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4 hidden">
+    <div class="bg-surface rounded-2xl shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden flex flex-col p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-charcoal">Households</h3>
+        <button type="button" id="households-modal-close" class="text-charcoal/70 hover:text-charcoal">×</button>
+      </div>
+      <div class="flex gap-2 mb-3">
+        <input type="text" id="household-new-name" class="flex-1 px-4 py-2 rounded-xl border border-blush/60" placeholder="Household name" />
+        <button type="button" id="household-add" class="px-4 py-2 rounded-xl bg-magenta text-white font-semibold hover:bg-magenta/90">Add</button>
+      </div>
+      <ul id="households-list" class="overflow-y-auto space-y-2 flex-1"></ul>
+    </div>
+  </div>
+
+  <!-- Guest edit modal -->
+  <div id="guest-modal" class="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4 hidden">
+    <div class="bg-surface rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 space-y-4">
+      <h3 id="guest-modal-title" class="text-lg font-semibold text-charcoal">Edit guest</h3>
+      <input type="hidden" id="guest-modal-id" />
+      <div class="grid gap-3">
+        <label class="block"><span class="text-sm font-medium text-charcoal">Name</span><input type="text" id="guest-modal-name" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1" /></label>
+        <label class="block"><span class="text-sm font-medium text-charcoal">Household</span><select id="guest-modal-household" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1"></select></label>
+        <label class="block"><span class="text-sm font-medium text-charcoal">Contact</span><input type="text" id="guest-modal-contact" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1" placeholder="Email or phone" /></label>
+        <label class="block"><span class="text-sm font-medium text-charcoal">Invited to events</span><div id="guest-modal-events" class="mt-1 flex flex-wrap gap-2"></div></label>
+        <label class="block"><span class="text-sm font-medium text-charcoal">Dietary restrictions</span><input type="text" id="guest-modal-dietary" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1" /></label>
+        <label class="block"><span class="text-sm font-medium text-charcoal">Gift</span><input type="text" id="guest-modal-gift" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1" /></label>
+        <label class="flex items-center gap-2"><input type="checkbox" id="guest-modal-thankyou" class="rounded" /><span class="text-sm font-medium text-charcoal">Thank-you sent</span></label>
+        <label class="block"><span class="text-sm font-medium text-charcoal">Notes</span><textarea id="guest-modal-notes" rows="2" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1"></textarea></label>
+      </div>
+      <div class="flex gap-2 justify-end">
+        <button type="button" id="guest-modal-cancel" class="px-4 py-2 rounded-xl border border-blush/60 hover:border-magenta/40">Cancel</button>
+        <button type="button" id="guest-modal-save" class="px-4 py-2 rounded-xl bg-magenta text-white font-semibold hover:bg-magenta/90">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vendor edit modal -->
+  <div id="vendor-modal" class="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4 hidden">
+    <div class="bg-surface rounded-2xl shadow-xl max-w-lg w-full p-6 space-y-4">
+      <h3 id="vendor-modal-title" class="text-lg font-semibold text-charcoal">Edit vendor</h3>
+      <input type="hidden" id="vendor-modal-id" />
+      <div class="grid gap-3">
+        <label class="block"><span class="text-sm font-medium text-charcoal">Name</span><input type="text" id="vendor-modal-name" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1" /></label>
+        <label class="block"><span class="text-sm font-medium text-charcoal">Category</span><input type="text" id="vendor-modal-category" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1" placeholder="e.g. Venue, Caterer" /></label>
+        <label class="block"><span class="text-sm font-medium text-charcoal">Email</span><input type="email" id="vendor-modal-email" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1" /></label>
+        <label class="block"><span class="text-sm font-medium text-charcoal">Phone</span><input type="tel" id="vendor-modal-phone" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1" /></label>
+        <label class="block"><span class="text-sm font-medium text-charcoal">Notes</span><textarea id="vendor-modal-notes" rows="2" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1"></textarea></label>
+      </div>
+      <div class="flex gap-2 justify-end">
+        <button type="button" id="vendor-modal-cancel" class="px-4 py-2 rounded-xl border border-blush/60 hover:border-magenta/40">Cancel</button>
+        <button type="button" id="vendor-modal-save" class="px-4 py-2 rounded-xl bg-magenta text-white font-semibold hover:bg-magenta/90">Save</button>
+      </div>
+    </div>
+  </div>
 
   <script src="/scripts/admin.js"></script>
 </body>

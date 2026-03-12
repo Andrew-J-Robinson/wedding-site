@@ -16,8 +16,7 @@ build/
 coverage/
 
 # Data files
-data/invitees.json
-data/rsvps.json
+data/
 
 # Cache
 .cache/

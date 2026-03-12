@@ -19,6 +19,8 @@
     allergies: '',
     note: '',
     submitting: false,
+    rsvpOpen: true,
+    eventId: null,
   };
 
   const stepperEl = document.getElementById('rsvp-stepper');
@@ -26,6 +28,17 @@
   const prevBtn = document.getElementById('rsvp-prev');
   const nextBtn = document.getElementById('rsvp-next');
   const statusEl = document.getElementById('rsvp-status');
+
+  const checkRsvpOpen = async () => {
+    try {
+      const res = await fetch('/api/settings/rsvp');
+      if (!res.ok) return;
+      const data = await res.json();
+      state.rsvpOpen = data.rsvpOpenGlobal !== false;
+      const openEvents = (data.events || []).filter((e) => e.rsvpOpen);
+      state.eventId = openEvents.length ? openEvents[0].id : null;
+    } catch (_) {}
+  };
 
   const renderStepper = () => {
     stepperEl.innerHTML = steps
@@ -43,6 +56,13 @@
   };
 
   const renderStep = () => {
+    if (!state.rsvpOpen) {
+      bodyEl.innerHTML = '<div class="p-4 rounded-xl bg-blush/40 text-charcoal">RSVP collection is currently closed. Please check back later.</div>';
+      stepperEl.innerHTML = '';
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+      return;
+    }
     renderStepper();
     prevBtn.disabled = state.step === 0 || state.submitting;
     nextBtn.disabled = state.submitting;
@@ -173,17 +193,21 @@
         body: JSON.stringify({
           name: state.name,
           guestId: state.selectedGuest?.id,
+          eventId: state.eventId,
           rsvp: state.rsvp,
           allergies: state.allergies,
           note: state.note,
         }),
       });
-      if (!res.ok) throw new Error('Submit failed');
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Submit failed');
+      }
       setStatus('Thank you! Your response has been recorded.', 'success');
       nextBtn.disabled = true;
       prevBtn.disabled = true;
     } catch (err) {
-      setStatus('Could not submit right now. Please try again.', 'error');
+      setStatus(err.message || 'Could not submit right now. Please try again.', 'error');
     } finally {
       state.submitting = false;
       renderStep();
@@ -254,5 +278,8 @@
     renderStep();
   });
 
-  renderStep();
+  (async () => {
+    await checkRsvpOpen();
+    renderStep();
+  })();
 })();
