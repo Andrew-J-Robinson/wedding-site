@@ -4,7 +4,7 @@ const crypto = require('crypto');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  if (!verifyAuth(req)) return res.status(401).json({ error: 'Unauthorized' });
+  if (!(await verifyAuth(req))) return res.status(401).json({ error: 'Unauthorized' });
 
   const payload = req.body;
   const array = Array.isArray(payload) ? payload : payload?.guests;

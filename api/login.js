@@ -14,21 +14,25 @@ function applyBlockedResponse(res, retryAfterSeconds) {
 
 function createLoginHandler({ limiter } = {}) {
   return async function handler(req, res) {
-    const effectiveLimiter = limiter || getDefaultLimiter();
-    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+    try {
+      const effectiveLimiter = limiter || getDefaultLimiter();
+      if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-    const preCheck = await effectiveLimiter.check(req);
-    if (!preCheck.allowed) return applyBlockedResponse(res, preCheck.retryAfterSeconds);
+      const preCheck = await effectiveLimiter.check(req);
+      if (!preCheck.allowed) return applyBlockedResponse(res, preCheck.retryAfterSeconds);
 
-    const { password } = req.body || {};
-    if (isValidAdminPassword(password)) {
-      await effectiveLimiter.reset(req);
-      return res.json({ token: signToken() });
+      const { password } = req.body || {};
+      if (isValidAdminPassword(password)) {
+        await effectiveLimiter.reset(req);
+        return res.json({ token: signToken() });
+      }
+
+      const failureResult = await effectiveLimiter.recordFailure(req);
+      if (!failureResult.allowed) return applyBlockedResponse(res, failureResult.retryAfterSeconds);
+      return res.status(401).json({ error: 'Invalid password' });
+    } catch (error) {
+      return res.status(500).json({ error: 'Authentication is not configured correctly.' });
     }
-
-    const failureResult = await effectiveLimiter.recordFailure(req);
-    if (!failureResult.allowed) return applyBlockedResponse(res, failureResult.retryAfterSeconds);
-    return res.status(401).json({ error: 'Invalid password' });
   };
 }
 

@@ -15,7 +15,7 @@ function toApi(g) {
 }
 
 module.exports = async function handler(req, res) {
-  if (!verifyAuth(req)) return res.status(401).json({ error: 'Unauthorized' });
+  if (!(await verifyAuth(req))) return res.status(401).json({ error: 'Unauthorized' });
   const { id } = req.query;
 
   if (req.method === 'PATCH') {

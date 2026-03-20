@@ -16,7 +16,7 @@ function toApi(g) {
 }
 
 module.exports = async function handler(req, res) {
-  if (!verifyAuth(req)) return res.status(401).json({ error: 'Unauthorized' });
+  if (!(await verifyAuth(req))) return res.status(401).json({ error: 'Unauthorized' });
 
   if (req.method === 'GET') {
     const { data } = await supabase.from('guests').select('*').order('created_at');

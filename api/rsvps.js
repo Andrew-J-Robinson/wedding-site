@@ -3,7 +3,7 @@ const { verifyAuth } = require('./_lib/auth');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
-  if (!verifyAuth(req)) return res.status(401).json({ error: 'Unauthorized' });
+  if (!(await verifyAuth(req))) return res.status(401).json({ error: 'Unauthorized' });
 
   const { data } = await supabase.from('rsvps').select('*').order('created_at');
   const results = (data || []).map((r) => ({

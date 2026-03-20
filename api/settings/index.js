@@ -2,7 +2,7 @@ const supabase = require('../_lib/supabase');
 const { verifyAuth } = require('../_lib/auth');
 
 module.exports = async function handler(req, res) {
-  if (!verifyAuth(req)) return res.status(401).json({ error: 'Unauthorized' });
+  if (!(await verifyAuth(req))) return res.status(401).json({ error: 'Unauthorized' });
 
   if (req.method === 'GET') {
     const { data: row } = await supabase.from('settings').select('data').eq('id', 1).single();

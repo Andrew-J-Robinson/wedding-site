@@ -109,3 +109,27 @@ test('successful login resets state and returns token', async () => {
   await handler(createReq('wrong-password', '198.51.100.9'), nextFailedRes);
   assert.equal(nextFailedRes.statusCode, 401);
 });
+
+test('returns 500 when auth env is missing', async () => {
+  const previousSecret = process.env.JWT_SECRET;
+  delete process.env.JWT_SECRET;
+  try {
+    const handler = createLoginHandler({
+      limiter: {
+        async check() {
+          return { allowed: true, retryAfterSeconds: 0 };
+        },
+        async reset() {},
+        async recordFailure() {
+          return { allowed: true, retryAfterSeconds: 0 };
+        }
+      }
+    });
+    const res = createRes();
+    await handler(createReq('correct-password'), res);
+    assert.equal(res.statusCode, 500);
+    assert.deepEqual(res.body, { error: 'Authentication is not configured correctly.' });
+  } finally {
+    process.env.JWT_SECRET = previousSecret;
+  }
+});
