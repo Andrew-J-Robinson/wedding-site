@@ -1,9 +1,14 @@
 const jwt = require('jsonwebtoken');
 
 const SECRET = process.env.JWT_SECRET || 'change-me-in-production';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
 function signToken() {
   return jwt.sign({ role: 'admin' }, SECRET, { expiresIn: '7d' });
+}
+
+function isValidAdminPassword(password) {
+  return password === ADMIN_PASSWORD;
 }
 
 function verifyAuth(req) {
@@ -18,4 +23,4 @@ function verifyAuth(req) {
   }
 }
 
-module.exports = { signToken, verifyAuth };
+module.exports = { signToken, verifyAuth, isValidAdminPassword };

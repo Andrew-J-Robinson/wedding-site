@@ -5,10 +5,10 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const Fuse = require('fuse.js');
 const { nanoid } = require('nanoid');
+const { signToken, verifyAuth, isValidAdminPassword } = require('./api/_lib/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
 const DATA_DIR = path.join(__dirname, 'data');
 const inviteesPath = path.join(DATA_DIR, 'invitees.json');
@@ -18,9 +18,6 @@ const eventsPath = path.join(DATA_DIR, 'events.json');
 const rsvpsPath = path.join(DATA_DIR, 'rsvps.json');
 const settingsPath = path.join(DATA_DIR, 'settings.json');
 const checklistPath = path.join(DATA_DIR, 'checklist.json');
-
-
-const sessionTokens = new Set();
 
 app.use(cors());
 app.use(bodyParser.json({ limit: '5mb' }));
@@ -48,9 +45,7 @@ const writeJson = async (filePath, payload) => {
 };
 
 const requireAuth = (req, res, next) => {
-  const auth = req.headers.authorization || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-  if (token && sessionTokens.has(token)) return next();
+  if (verifyAuth(req)) return next();
   return res.status(401).json({ error: 'Unauthorized' });
 };
 
@@ -453,11 +448,7 @@ app.post('/api/checklist/reorder', requireAuth, async (req, res) => {
 // ----- Auth -----
 app.post('/api/login', (req, res) => {
   const { password } = req.body || {};
-  if (password === ADMIN_PASSWORD) {
-    const token = nanoid();
-    sessionTokens.add(token);
-    return res.json({ token });
-  }
+  if (isValidAdminPassword(password)) return res.json({ token: signToken() });
   return res.status(401).json({ error: 'Invalid password' });
 });
 
