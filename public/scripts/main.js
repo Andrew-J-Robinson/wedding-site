@@ -20,7 +20,6 @@
     note: '',
     submitting: false,
     rsvpOpen: true,
-    eventId: null,
   };
 
   const stepperEl = document.getElementById('rsvp-stepper');
@@ -35,8 +34,6 @@
       if (!res.ok) return;
       const data = await res.json();
       state.rsvpOpen = data.rsvpOpenGlobal !== false;
-      const openEvents = (data.events || []).filter((e) => e.rsvpOpen);
-      state.eventId = openEvents.length ? openEvents[0].id : null;
     } catch (_) {}
   };
 
@@ -193,7 +190,6 @@
         body: JSON.stringify({
           name: state.name,
           guestId: state.selectedGuest?.id,
-          eventId: state.eventId,
           rsvp: state.rsvp,
           allergies: state.allergies,
           note: state.note,

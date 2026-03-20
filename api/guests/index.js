@@ -5,10 +5,8 @@ const crypto = require('crypto');
 function toApi(g) {
   return {
     id: g.id,
-    householdId: g.household_id,
     name: g.name,
     contact: g.contact,
-    invitedEventIds: g.invited_event_ids,
     notes: g.notes,
     dietaryRestrictions: g.dietary_restrictions,
     gift: g.gift,
@@ -31,10 +29,8 @@ module.exports = async function handler(req, res) {
 
     const row = {
       id: crypto.randomUUID(),
-      household_id: b.householdId || null,
       name: String(b.name).trim(),
       contact: b.contact || '',
-      invited_event_ids: Array.isArray(b.invitedEventIds) ? b.invitedEventIds : [],
       notes: b.notes || '',
       dietary_restrictions: b.dietaryRestrictions || '',
       gift: b.gift || '',

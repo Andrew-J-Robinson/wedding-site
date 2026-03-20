@@ -4,10 +4,8 @@ const { verifyAuth } = require('../_lib/auth');
 function toApi(g) {
   return {
     id: g.id,
-    householdId: g.household_id,
     name: g.name,
     contact: g.contact,
-    invitedEventIds: g.invited_event_ids,
     notes: g.notes,
     dietaryRestrictions: g.dietary_restrictions,
     gift: g.gift,
@@ -24,9 +22,7 @@ module.exports = async function handler(req, res) {
     const b = req.body || {};
     const updates = {};
     if (b.name !== undefined) updates.name = String(b.name).trim();
-    if (b.householdId !== undefined) updates.household_id = b.householdId || null;
     if (b.contact !== undefined) updates.contact = b.contact;
-    if (b.invitedEventIds !== undefined) updates.invited_event_ids = b.invitedEventIds;
     if (b.notes !== undefined) updates.notes = b.notes;
     if (b.dietaryRestrictions !== undefined) updates.dietary_restrictions = b.dietaryRestrictions;
     if (b.gift !== undefined) updates.gift = b.gift;

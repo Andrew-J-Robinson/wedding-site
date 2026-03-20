@@ -10,19 +10,12 @@ module.exports = async function handler(req, res) {
   const array = Array.isArray(payload) ? payload : payload?.guests;
   if (!Array.isArray(array)) return res.status(400).json({ error: 'Expect array of guests or { guests: [] }' });
 
-  const { data: events } = await supabase.from('events').select('id').order('sort_order').limit(1);
-  const defaultEventId = events?.[0]?.id || null;
-
   const rows = array
     .filter((item) => item && item.name)
     .map((item) => ({
       id: item.id || crypto.randomUUID(),
-      household_id: item.householdId || null,
       name: String(item.name).trim(),
       contact: item.contact || '',
-      invited_event_ids: Array.isArray(item.invitedEventIds)
-        ? item.invitedEventIds
-        : defaultEventId ? [defaultEventId] : [],
       notes: item.notes || '',
       dietary_restrictions: item.dietaryRestrictions || item.allergies || '',
       gift: item.gift || '',

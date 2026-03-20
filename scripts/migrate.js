@@ -40,45 +40,14 @@ async function main() {
   if (settingsErr) console.error('  settings error:', settingsErr.message);
   else console.log('  settings OK');
 
-  // --- Events ---
-  const events = readLocal('events.json', []);
-  if (events.length) {
-    console.log(`Migrating ${events.length} event(s)...`);
-    const rows = events.map((e) => ({
-      id: e.id,
-      name: e.name,
-      rsvp_open: e.rsvpOpen !== false,
-      sort_order: e.order ?? 0,
-    }));
-    const { error } = await supabase.from('events').upsert(rows);
-    if (error) console.error('  events error:', error.message);
-    else console.log('  events OK');
-  }
-
-  // --- Households ---
-  const households = readLocal('households.json', []);
-  if (households.length) {
-    console.log(`Migrating ${households.length} household(s)...`);
-    const rows = households.map((h) => ({
-      id: h.id,
-      name: h.name,
-      created_at: h.createdAt || new Date().toISOString(),
-    }));
-    const { error } = await supabase.from('households').upsert(rows);
-    if (error) console.error('  households error:', error.message);
-    else console.log('  households OK');
-  }
-
   // --- Guests ---
   const guests = readLocal('guests.json', []);
   if (guests.length) {
     console.log(`Migrating ${guests.length} guest(s)...`);
     const rows = guests.map((g) => ({
       id: g.id,
-      household_id: g.householdId || null,
       name: g.name,
       contact: g.contact || '',
-      invited_event_ids: g.invitedEventIds || [],
       notes: g.notes || '',
       dietary_restrictions: g.dietaryRestrictions || '',
       gift: g.gift || '',
@@ -101,7 +70,6 @@ async function main() {
     const rows = rsvps.map((r) => ({
       id: r.id,
       guest_id: r.guestId || null,
-      event_id: r.eventId || null,
       name: r.name,
       rsvp: r.rsvp,
       headcount: r.headcount ?? null,
@@ -112,22 +80,6 @@ async function main() {
     const { error } = await supabase.from('rsvps').upsert(rows);
     if (error) console.error('  rsvps error:', error.message);
     else console.log('  rsvps OK');
-  }
-
-  // --- Checklist ---
-  const checklist = readLocal('checklist.json', []);
-  if (checklist.length) {
-    console.log(`Migrating ${checklist.length} checklist task(s)...`);
-    const rows = checklist.map((t) => ({
-      id: t.id,
-      title: t.title,
-      sort_order: t.order ?? 0,
-      completed: !!t.completed,
-      created_at: t.createdAt || new Date().toISOString(),
-    }));
-    const { error } = await supabase.from('checklist').upsert(rows);
-    if (error) console.error('  checklist error:', error.message);
-    else console.log('  checklist OK');
   }
 
   console.log('\nMigration complete.');
