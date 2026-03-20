@@ -130,24 +130,6 @@ async function main() {
     else console.log('  checklist OK');
   }
 
-  // --- Vendors ---
-  const vendors = readLocal('vendors.json', []);
-  if (vendors.length) {
-    console.log(`Migrating ${vendors.length} vendor(s)...`);
-    const rows = vendors.map((v) => ({
-      id: v.id,
-      name: v.name || '',
-      category: v.category || '',
-      email: v.email || '',
-      phone: v.phone || '',
-      notes: v.notes || '',
-      created_at: v.createdAt || new Date().toISOString(),
-    }));
-    const { error } = await supabase.from('vendors').upsert(rows);
-    if (error) console.error('  vendors error:', error.message);
-    else console.log('  vendors OK');
-  }
-
   console.log('\nMigration complete.');
 }
 

@@ -18,7 +18,7 @@ const eventsPath = path.join(DATA_DIR, 'events.json');
 const rsvpsPath = path.join(DATA_DIR, 'rsvps.json');
 const settingsPath = path.join(DATA_DIR, 'settings.json');
 const checklistPath = path.join(DATA_DIR, 'checklist.json');
-const vendorsPath = path.join(DATA_DIR, 'vendors.json');
+
 
 const sessionTokens = new Set();
 
@@ -448,47 +448,6 @@ app.post('/api/checklist/reorder', requireAuth, async (req, res) => {
   const merged = [...reordered, ...rest].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   await writeJson(checklistPath, merged);
   res.json(merged);
-});
-
-// ----- Vendors -----
-const normalizeVendor = (item) => ({
-  id: item.id || nanoid(),
-  name: String(item.name || '').trim(),
-  category: String(item.category || '').trim(),
-  email: String(item.email || '').trim(),
-  phone: String(item.phone || '').trim(),
-  notes: String(item.notes || '').trim(),
-  createdAt: item.createdAt || new Date().toISOString(),
-});
-
-app.get('/api/vendors', requireAuth, async (_req, res) => {
-  const list = await readJson(vendorsPath, []);
-  res.json(list);
-});
-
-app.post('/api/vendors', requireAuth, async (req, res) => {
-  const list = await readJson(vendorsPath, []);
-  const vendor = normalizeVendor({ ...req.body });
-  list.push(vendor);
-  await writeJson(vendorsPath, list);
-  res.json(vendor);
-});
-
-app.patch('/api/vendors/:id', requireAuth, async (req, res) => {
-  const list = await readJson(vendorsPath, []);
-  const i = list.findIndex((v) => v.id === req.params.id);
-  if (i === -1) return res.status(404).json({ error: 'Vendor not found' });
-  list[i] = normalizeVendor({ ...list[i], ...req.body });
-  await writeJson(vendorsPath, list);
-  res.json(list[i]);
-});
-
-app.delete('/api/vendors/:id', requireAuth, async (req, res) => {
-  const list = await readJson(vendorsPath, []);
-  const filtered = list.filter((v) => v.id !== req.params.id);
-  if (filtered.length === list.length) return res.status(404).json({ error: 'Vendor not found' });
-  await writeJson(vendorsPath, filtered);
-  res.json({ ok: true });
 });
 
 // ----- Auth -----

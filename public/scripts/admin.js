@@ -84,8 +84,6 @@
       refreshRsvps();
     } else if (current === 'rsvp-controls') {
       loadRsvpControls();
-    } else if (current === 'vendors') {
-      loadVendors();
     } else if (current === 'photos') {
       loadPhotos();
     }
@@ -372,92 +370,6 @@
       rsvpSettingsStatus.textContent = 'Failed to save.';
     }
   });
-
-  // ----- Vendors -----
-  const vendorsTbody = document.getElementById('vendors-tbody');
-  const vendorsStatus = document.getElementById('vendors-status');
-  const vendorModal = document.getElementById('vendor-modal');
-
-  const loadVendors = async () => {
-    if (!token) return;
-    vendorsStatus.textContent = 'Loading...';
-    try {
-      const res = await api('/api/vendors');
-      if (!res.ok) throw new Error();
-      const list = await res.json();
-      vendorsTbody.innerHTML = list
-        .map(
-          (v) => `
-            <tr class="hover:bg-blush/20">
-              <td class="px-3 py-2 font-medium">${escapeHtml(v.name)}</td>
-              <td class="px-3 py-2 text-charcoal/80">${escapeHtml(v.category)}</td>
-              <td class="px-3 py-2 text-charcoal/80">${escapeHtml(v.email)}</td>
-              <td class="px-3 py-2 text-charcoal/80">${escapeHtml(v.phone)}</td>
-              <td class="px-3 py-2 text-charcoal/80 max-w-[200px] truncate" title="${escapeHtml(v.notes || '')}">${escapeHtml(v.notes || '')}</td>
-              <td class="px-3 py-2">
-                <button type="button" data-vendor-edit="${v.id}" class="text-magenta hover:underline text-xs">Edit</button>
-                <button type="button" data-vendor-delete="${v.id}" class="text-magenta hover:underline text-xs ml-1">Delete</button>
-              </td>
-            </tr>
-          `
-        )
-        .join('');
-      vendorsTbody.querySelectorAll('[data-vendor-edit]').forEach((btn) => {
-        btn.addEventListener('click', () => openVendorModal(btn.getAttribute('data-vendor-edit'), list));
-      });
-      vendorsTbody.querySelectorAll('[data-vendor-delete]').forEach((btn) => {
-        btn.addEventListener('click', () => deleteVendor(btn.getAttribute('data-vendor-delete')));
-      });
-      vendorsStatus.textContent = `${list.length} vendor(s)`;
-    } catch (_) {
-      vendorsStatus.textContent = 'Could not load vendors.';
-    }
-  };
-
-  const openVendorModal = (vendorId, list) => {
-    const v = list?.find((x) => x.id === vendorId) || null;
-    document.getElementById('vendor-modal-title').textContent = vendorId ? 'Edit vendor' : 'Add vendor';
-    document.getElementById('vendor-modal-id').value = vendorId || '';
-    document.getElementById('vendor-modal-name').value = v?.name || '';
-    document.getElementById('vendor-modal-category').value = v?.category || '';
-    document.getElementById('vendor-modal-email').value = v?.email || '';
-    document.getElementById('vendor-modal-phone').value = v?.phone || '';
-    document.getElementById('vendor-modal-notes').value = v?.notes || '';
-    vendorModal.classList.remove('hidden');
-  };
-
-  const deleteVendor = async (id) => {
-    if (!confirm('Remove this vendor?')) return;
-    try {
-      await api(`/api/vendors/${id}`, { method: 'DELETE' });
-      loadVendors();
-    } catch (_) {}
-  };
-
-  document.getElementById('vendor-modal-cancel')?.addEventListener('click', () => vendorModal.classList.add('hidden'));
-  document.getElementById('vendor-modal-save')?.addEventListener('click', async () => {
-    const id = document.getElementById('vendor-modal-id').value;
-    const name = document.getElementById('vendor-modal-name').value.trim();
-    if (!name) return;
-    const payload = {
-      name,
-      category: document.getElementById('vendor-modal-category').value.trim(),
-      email: document.getElementById('vendor-modal-email').value.trim(),
-      phone: document.getElementById('vendor-modal-phone').value.trim(),
-      notes: document.getElementById('vendor-modal-notes').value.trim(),
-    };
-    try {
-      if (id) {
-        await api(`/api/vendors/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-      } else {
-        await api('/api/vendors', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-      }
-      vendorModal.classList.add('hidden');
-      loadVendors();
-    } catch (_) {}
-  });
-
-  document.getElementById('vendors-add-btn')?.addEventListener('click', () => openVendorModal(null, []));
 
   // ----- Photos -----
   const PHOTO_GROUPS = [

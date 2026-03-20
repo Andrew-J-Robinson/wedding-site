@@ -54,13 +54,3 @@ create table checklist (
   completed boolean not null default false,
   created_at timestamptz not null default now()
 );
-
-create table vendors (
-  id text primary key,
-  name text not null,
-  category text not null default '',
-  email text not null default '',
-  phone text not null default '',
-  notes text not null default '',
-  created_at timestamptz not null default now()
-);
