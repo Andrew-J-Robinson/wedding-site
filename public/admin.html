@@ -63,8 +63,8 @@
       <nav class="flex flex-wrap gap-2 border-b border-blush/60 pb-4 mb-6">
         <button type="button" data-tab="guests" class="admin-tab px-4 py-2 rounded-xl font-medium transition border border-blush/60 hover:border-magenta/40">Guests</button>
         <button type="button" data-tab="rsvp-controls" class="admin-tab px-4 py-2 rounded-xl font-medium transition border border-blush/60 hover:border-magenta/40">RSVP Controls</button>
-        <button type="button" data-tab="checklist" class="admin-tab px-4 py-2 rounded-xl font-medium transition border border-blush/60 hover:border-magenta/40">Checklist</button>
         <button type="button" data-tab="vendors" class="admin-tab px-4 py-2 rounded-xl font-medium transition border border-blush/60 hover:border-magenta/40">Vendors</button>
+        <button type="button" data-tab="photos" class="admin-tab px-4 py-2 rounded-xl font-medium transition border border-blush/60 hover:border-magenta/40">Photos</button>
       </nav>
 
       <!-- Guests -->
@@ -73,11 +73,8 @@
           <section class="bg-surface border border-blush/50 rounded-2xl shadow-sm p-6 space-y-4">
             <div class="flex items-center justify-between flex-wrap gap-2">
               <h3 class="text-lg font-semibold text-charcoal">Add / Import Guests</h3>
-              <div class="flex gap-2">
-                <button id="households-open-btn" class="px-3 py-1.5 rounded-xl border border-blush/60 hover:border-magenta/40 text-sm">Households</button>
-              </div>
             </div>
-            <p class="text-sm text-charcoal/70">Add one guest or import from CSV/JSON (name, householdId, contact, invitedEventIds, notes, dietaryRestrictions, gift, thankYouSent).</p>
+            <p class="text-sm text-charcoal/70">Add one guest or import from CSV/JSON (name, contact, notes, dietaryRestrictions, gift, thankYouSent).</p>
             <div class="space-y-3">
               <div class="flex gap-2 flex-wrap">
                 <button id="guests-add-btn" class="px-4 py-2 rounded-xl bg-magenta text-white font-semibold hover:bg-magenta/90 transition">Add guest</button>
@@ -93,7 +90,6 @@
             <div class="flex items-center justify-between flex-wrap gap-2">
               <h3 class="text-lg font-semibold text-charcoal">RSVP overview</h3>
               <div class="flex gap-2">
-                <select id="guests-rsvp-event" class="px-3 py-2 rounded-xl border border-blush/60 text-sm bg-surface"></select>
                 <button id="guests-refresh-rsvp" class="px-3 py-2 rounded-xl border border-blush/60 hover:border-magenta/40 text-sm transition">Refresh</button>
               </div>
             </div>
@@ -130,8 +126,6 @@
               <thead class="bg-blush/30 text-charcoal sticky top-0">
                 <tr>
                   <th class="text-left px-3 py-2">Name</th>
-                  <th class="text-left px-3 py-2">Household</th>
-                  <th class="text-left px-3 py-2">Events</th>
                   <th class="text-left px-3 py-2">Contact</th>
                   <th class="text-left px-3 py-2">Dietary</th>
                   <th class="text-left px-3 py-2">Gift</th>
@@ -161,28 +155,6 @@
           </div>
           <p id="rsvp-settings-status" class="text-sm text-charcoal/70"></p>
         </section>
-        <section class="bg-surface border border-blush/50 rounded-2xl shadow-sm p-6 space-y-4">
-          <h3 class="text-lg font-semibold text-charcoal">Per-event RSVP</h3>
-          <p class="text-sm text-charcoal/70">Turn RSVP on or off for each event. Guests see and submit for events where RSVP is open.</p>
-          <ul id="rsvp-events-list" class="space-y-3"></ul>
-          <p id="rsvp-events-status" class="text-sm text-charcoal/70"></p>
-        </section>
-      </div>
-
-      <!-- Checklist -->
-      <div id="panel-checklist" data-tab-panel class="space-y-6">
-        <section class="bg-surface border border-blush/50 rounded-2xl shadow-sm p-6 space-y-4">
-          <div class="flex items-center justify-between flex-wrap gap-2">
-            <h3 class="text-lg font-semibold text-charcoal">Wedding checklist</h3>
-            <div class="flex gap-2">
-              <input id="checklist-new-title" type="text" class="px-4 py-2 rounded-xl border border-blush/60 text-sm w-48" placeholder="New task..." />
-              <button id="checklist-add" class="px-4 py-2 rounded-xl bg-magenta text-white font-semibold hover:bg-magenta/90 transition">Add</button>
-            </div>
-          </div>
-          <p class="text-sm text-charcoal/70">Drag to reorder; check off when done.</p>
-          <ul id="checklist-list" class="space-y-2"></ul>
-          <p id="checklist-status" class="text-sm text-charcoal/70"></p>
-        </section>
       </div>
 
       <!-- Vendors -->
@@ -210,23 +182,12 @@
           <p id="vendors-status" class="text-sm text-charcoal/70"></p>
         </section>
       </div>
+      <!-- Photos -->
+      <div id="panel-photos" data-tab-panel class="space-y-6">
+        <p class="text-sm text-charcoal/70">Loading photos...</p>
+      </div>
     </section>
   </main>
-
-  <!-- Households modal -->
-  <div id="households-modal" class="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4 hidden">
-    <div class="bg-surface rounded-2xl shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden flex flex-col p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-charcoal">Households</h3>
-        <button type="button" id="households-modal-close" class="text-charcoal/70 hover:text-charcoal">×</button>
-      </div>
-      <div class="flex gap-2 mb-3">
-        <input type="text" id="household-new-name" class="flex-1 px-4 py-2 rounded-xl border border-blush/60" placeholder="Household name" />
-        <button type="button" id="household-add" class="px-4 py-2 rounded-xl bg-magenta text-white font-semibold hover:bg-magenta/90">Add</button>
-      </div>
-      <ul id="households-list" class="overflow-y-auto space-y-2 flex-1"></ul>
-    </div>
-  </div>
 
   <!-- Guest edit modal -->
   <div id="guest-modal" class="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4 hidden">
@@ -235,9 +196,7 @@
       <input type="hidden" id="guest-modal-id" />
       <div class="grid gap-3">
         <label class="block"><span class="text-sm font-medium text-charcoal">Name</span><input type="text" id="guest-modal-name" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1" /></label>
-        <label class="block"><span class="text-sm font-medium text-charcoal">Household</span><select id="guest-modal-household" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1"></select></label>
         <label class="block"><span class="text-sm font-medium text-charcoal">Contact</span><input type="text" id="guest-modal-contact" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1" placeholder="Email or phone" /></label>
-        <label class="block"><span class="text-sm font-medium text-charcoal">Invited to events</span><div id="guest-modal-events" class="mt-1 flex flex-wrap gap-2"></div></label>
         <label class="block"><span class="text-sm font-medium text-charcoal">Dietary restrictions</span><input type="text" id="guest-modal-dietary" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1" /></label>
         <label class="block"><span class="text-sm font-medium text-charcoal">Gift</span><input type="text" id="guest-modal-gift" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1" /></label>
         <label class="flex items-center gap-2"><input type="checkbox" id="guest-modal-thankyou" class="rounded" /><span class="text-sm font-medium text-charcoal">Thank-you sent</span></label>

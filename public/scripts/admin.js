@@ -7,8 +7,6 @@
 
   let token = localStorage.getItem('adminToken') || '';
   let previewData = [];
-  let households = [];
-  let events = [];
   let guests = [];
 
   const handleUnauthorized = () => {
@@ -82,17 +80,14 @@
   const loadTabData = (activeTab) => {
     const current = activeTab || (document.querySelector('[data-tab-panel].active')?.id?.replace('panel-', '') || 'guests');
     if (current === 'guests') {
-      loadHouseholds();
-      loadEvents();
       loadGuests();
-      loadRsvpSettingsForGuests();
       refreshRsvps();
     } else if (current === 'rsvp-controls') {
       loadRsvpControls();
-    } else if (current === 'checklist') {
-      loadChecklist();
     } else if (current === 'vendors') {
       loadVendors();
+    } else if (current === 'photos') {
+      loadPhotos();
     }
   };
 
@@ -196,20 +191,6 @@
     }
   });
 
-  const loadHouseholds = async () => {
-    try {
-      const res = await api('/api/households');
-      if (res.ok) households = await res.json();
-    } catch (_) { households = []; }
-  };
-
-  const loadEvents = async () => {
-    try {
-      const res = await api('/api/events');
-      if (res.ok) events = await res.json();
-    } catch (_) { events = []; }
-  };
-
   const loadGuests = async () => {
     if (!token) return setListStatus('Login to view guests', 'error');
     setListStatus('Loading...');
@@ -224,17 +205,12 @@
     }
   };
 
-  const householdName = (id) => (households.find((h) => h.id === id)?.name) || '—';
-  const eventNames = (ids) => (ids || []).map((id) => events.find((e) => e.id === id)?.name).filter(Boolean).join(', ') || '—';
-
   const renderGuestsTable = () => {
     guestsTbody.innerHTML = guests
       .map(
         (g) => `
           <tr class="hover:bg-blush/20">
             <td class="px-3 py-2 font-medium">${escapeHtml(g.name)}</td>
-            <td class="px-3 py-2 text-charcoal/80">${escapeHtml(householdName(g.householdId))}</td>
-            <td class="px-3 py-2 text-charcoal/80">${escapeHtml(eventNames(g.invitedEventIds))}</td>
             <td class="px-3 py-2 text-charcoal/80">${escapeHtml(g.contact || '')}</td>
             <td class="px-3 py-2 text-charcoal/80 max-w-[120px] truncate" title="${escapeHtml(g.dietaryRestrictions || '')}">${escapeHtml(g.dietaryRestrictions || '')}</td>
             <td class="px-3 py-2 text-charcoal/80 max-w-[100px] truncate" title="${escapeHtml(g.gift || '')}">${escapeHtml(g.gift || '')}</td>
@@ -272,13 +248,7 @@
     } catch (_) {}
   };
 
-  document.getElementById('guests-refresh-list')?.addEventListener('click', () => { loadHouseholds(); loadEvents(); loadGuests(); });
-
-  const loadRsvpSettingsForGuests = () => {
-    const sel = document.getElementById('guests-rsvp-event');
-    if (!sel) return;
-    sel.innerHTML = '<option value="">All events</option>' + events.map((e) => `<option value="${e.id}">${escapeHtml(e.name)}</option>`).join('');
-  };
+  document.getElementById('guests-refresh-list')?.addEventListener('click', () => { loadGuests(); });
 
   const rsvpRows = document.getElementById('admin-rsvp-rows');
   const rsvpStatus = document.getElementById('admin-rsvp-status');
@@ -294,10 +264,8 @@
   const refreshRsvps = async () => {
     if (!token) return setRsvpStatus('Login to view RSVPs', 'error');
     setRsvpStatus('Loading...');
-    const eventId = document.getElementById('guests-rsvp-event')?.value || '';
     try {
-      const url = eventId ? `/api/rsvps?eventId=${encodeURIComponent(eventId)}` : '/api/rsvps';
-      const res = await api(url);
+      const res = await api('/api/rsvps');
       if (!res.ok) throw new Error('fetch failed');
       const data = await res.json();
       const rows = data.results || [];
@@ -328,7 +296,6 @@
   };
 
   document.getElementById('guests-refresh-rsvp')?.addEventListener('click', refreshRsvps);
-  document.getElementById('guests-rsvp-event')?.addEventListener('change', refreshRsvps);
 
   // Guest modal
   const guestModal = document.getElementById('guest-modal');
@@ -343,14 +310,6 @@
     document.getElementById('guest-modal-notes').value = g?.notes || '';
     document.getElementById('guest-modal-thankyou').checked = !!g?.thankYouSent;
 
-    const householdSelect = document.getElementById('guest-modal-household');
-    householdSelect.innerHTML = '<option value="">—</option>' + households.map((h) => `<option value="${h.id}" ${g?.householdId === h.id ? 'selected' : ''}>${escapeHtml(h.name)}</option>`).join('');
-
-    const eventsContainer = document.getElementById('guest-modal-events');
-    eventsContainer.innerHTML = events.map((e) => {
-      const checked = (g?.invitedEventIds || []).includes(e.id);
-      return `<label class="inline-flex items-center gap-1"><input type="checkbox" data-event-id="${e.id}" ${checked ? 'checked' : ''} class="rounded" /><span>${escapeHtml(e.name)}</span></label>`;
-    }).join('');
     guestModal.classList.remove('hidden');
   };
 
@@ -361,17 +320,13 @@
     const id = document.getElementById('guest-modal-id').value;
     const name = document.getElementById('guest-modal-name').value.trim();
     if (!name) return;
-    const householdId = document.getElementById('guest-modal-household').value || null;
-    const invitedEventIds = Array.from(document.getElementById('guest-modal-events').querySelectorAll('input:checked')).map((c) => c.getAttribute('data-event-id'));
     const payload = {
       name,
-      householdId,
       contact: document.getElementById('guest-modal-contact').value.trim(),
       dietaryRestrictions: document.getElementById('guest-modal-dietary').value.trim(),
       gift: document.getElementById('guest-modal-gift').value.trim(),
       notes: document.getElementById('guest-modal-notes').value.trim(),
       thankYouSent: document.getElementById('guest-modal-thankyou').checked,
-      invitedEventIds,
     };
     try {
       if (id) {
@@ -388,95 +343,17 @@
 
   document.getElementById('guests-add-btn')?.addEventListener('click', () => openGuestModal(null));
 
-  // Households modal
-  const householdsModal = document.getElementById('households-modal');
-  const householdsListEl = document.getElementById('households-list');
-  const householdNewName = document.getElementById('household-new-name');
-
-  const renderHouseholdsList = () => {
-    householdsListEl.innerHTML = households
-      .map(
-        (h) => `
-          <li class="flex items-center justify-between p-2 rounded-xl border border-blush/50">
-            <span class="text-charcoal">${escapeHtml(h.name)}</span>
-            <button type="button" data-household-delete="${h.id}" class="text-magenta hover:underline text-sm">Delete</button>
-          </li>
-        `
-      )
-      .join('');
-    householdsListEl.querySelectorAll('[data-household-delete]').forEach((btn) => {
-      btn.addEventListener('click', async () => {
-        if (!confirm('Delete this household? Guests will be unassigned.')) return;
-        try {
-          await api(`/api/households/${btn.getAttribute('data-household-delete')}`, { method: 'DELETE' });
-          await loadHouseholds();
-          renderHouseholdsList();
-          loadGuests();
-        } catch (_) {}
-      });
-    });
-  };
-
-  document.getElementById('households-open-btn')?.addEventListener('click', async () => {
-    await loadHouseholds();
-    renderHouseholdsList();
-    householdNewName.value = '';
-    householdsModal.classList.remove('hidden');
-  });
-  document.getElementById('households-modal-close')?.addEventListener('click', () => householdsModal.classList.add('hidden'));
-  document.getElementById('household-add')?.addEventListener('click', async () => {
-    const name = householdNewName?.value?.trim() || 'Unnamed household';
-    try {
-      const res = await api('/api/households', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
-      if (!res.ok) throw new Error();
-      await loadHouseholds();
-      renderHouseholdsList();
-      householdNewName.value = '';
-    } catch (_) {}
-  });
-
   // ----- RSVP Controls -----
   const rsvpGlobalToggle = document.getElementById('rsvp-global-toggle');
   const rsvpSettingsStatus = document.getElementById('rsvp-settings-status');
-  const rsvpEventsList = document.getElementById('rsvp-events-list');
-  const rsvpEventsStatus = document.getElementById('rsvp-events-status');
 
   const loadRsvpControls = async () => {
     try {
-      const [setRes, evRes] = await Promise.all([api('/api/settings'), api('/api/events')]);
-      if (!setRes.ok || !evRes.ok) throw new Error();
+      const setRes = await api('/api/settings');
+      if (!setRes.ok) throw new Error();
       const settings = await setRes.json();
-      events = await evRes.json();
       rsvpGlobalToggle.checked = settings.rsvpOpenGlobal !== false;
       rsvpSettingsStatus.textContent = '';
-
-      rsvpEventsList.innerHTML = events
-        .map(
-          (e) => `
-            <li class="flex items-center justify-between p-3 rounded-xl border border-blush/50">
-              <span class="font-medium text-charcoal">${escapeHtml(e.name)}</span>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" data-event-rsvp="${e.id}" class="sr-only peer" ${e.rsvpOpen !== false ? 'checked' : ''} />
-                <div class="w-11 h-6 bg-blush/60 rounded-full peer peer-checked:bg-magenta"></div>
-                <span class="ml-2 text-sm text-charcoal/70">RSVP on</span>
-              </label>
-            </li>
-          `
-        )
-        .join('');
-      rsvpEventsList.querySelectorAll('[data-event-rsvp]').forEach((cb) => {
-        cb.addEventListener('change', async () => {
-          const eventId = cb.getAttribute('data-event-rsvp');
-          try {
-            const res = await api(`/api/events/${eventId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rsvpOpen: cb.checked }) });
-            if (!res.ok) throw new Error();
-            rsvpEventsStatus.textContent = 'Saved.';
-          } catch (_) {
-            rsvpEventsStatus.textContent = 'Failed to save.';
-          }
-        });
-      });
-      rsvpEventsStatus.textContent = '';
     } catch (_) {
       rsvpSettingsStatus.textContent = 'Could not load settings.';
     }
@@ -493,99 +370,6 @@
       rsvpSettingsStatus.textContent = rsvpGlobalToggle.checked ? 'RSVP collection is on.' : 'RSVP collection is off.';
     } catch (_) {
       rsvpSettingsStatus.textContent = 'Failed to save.';
-    }
-  });
-
-  // ----- Checklist -----
-  const checklistList = document.getElementById('checklist-list');
-  const checklistNewTitle = document.getElementById('checklist-new-title');
-  const checklistAddBtn = document.getElementById('checklist-add');
-  const checklistStatus = document.getElementById('checklist-status');
-  let checklistTasks = [];
-
-  const loadChecklist = async () => {
-    if (!token) return;
-    checklistStatus.textContent = 'Loading...';
-    try {
-      const res = await api('/api/checklist');
-      if (!res.ok) throw new Error();
-      checklistTasks = await res.json();
-      renderChecklist();
-      checklistStatus.textContent = '';
-    } catch (_) {
-      checklistStatus.textContent = 'Could not load checklist.';
-    }
-  };
-
-  const renderChecklist = () => {
-    checklistList.innerHTML = checklistTasks
-      .map(
-        (t, i) => `
-          <li data-task-id="${t.id}" class="flex items-center gap-2 p-3 rounded-xl border border-blush/50 hover:bg-blush/20">
-            <span class="flex gap-1">
-              <button type="button" data-move-up="${t.id}" class="px-2 py-1 rounded border border-blush/60 text-sm ${i === 0 ? 'opacity-50 pointer-events-none' : ''}">↑</button>
-              <button type="button" data-move-down="${t.id}" class="px-2 py-1 rounded border border-blush/60 text-sm ${i === checklistTasks.length - 1 ? 'opacity-50 pointer-events-none' : ''}">↓</button>
-            </span>
-            <label class="flex-1 flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" data-task-complete="${t.id}" ${t.completed ? 'checked' : ''} class="rounded" />
-              <span class="${t.completed ? 'line-through text-charcoal/60' : ''}">${escapeHtml(t.title)}</span>
-            </label>
-            <button type="button" data-task-delete="${t.id}" class="text-magenta hover:underline text-sm">Delete</button>
-          </li>
-        `
-      )
-      .join('');
-
-    checklistList.querySelectorAll('[data-task-complete]').forEach((cb) => {
-      cb.addEventListener('change', async () => {
-        const id = cb.getAttribute('data-task-complete');
-        try {
-          await api(`/api/checklist/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ completed: cb.checked }) });
-          loadChecklist();
-        } catch (_) {}
-      });
-    });
-    checklistList.querySelectorAll('[data-task-delete]').forEach((btn) => {
-      btn.addEventListener('click', async () => {
-        if (!confirm('Remove this task?')) return;
-        try {
-          await api(`/api/checklist/${btn.getAttribute('data-task-delete')}`, { method: 'DELETE' });
-          loadChecklist();
-        } catch (_) {}
-      });
-    });
-    checklistList.querySelectorAll('[data-move-up]').forEach((btn) => {
-      btn.addEventListener('click', () => reorderChecklist(btn.getAttribute('data-move-up'), -1));
-    });
-    checklistList.querySelectorAll('[data-move-down]').forEach((btn) => {
-      btn.addEventListener('click', () => reorderChecklist(btn.getAttribute('data-move-down'), 1));
-    });
-  };
-
-  const reorderChecklist = async (id, delta) => {
-    const i = checklistTasks.findIndex((t) => t.id === id);
-    if (i === -1) return;
-    const j = i + delta;
-    if (j < 0 || j >= checklistTasks.length) return;
-    const order = checklistTasks.map((t) => t.id);
-    [order[i], order[j]] = [order[j], order[i]];
-    try {
-      const res = await api('/api/checklist/reorder', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order }) });
-      if (!res.ok) throw new Error();
-      loadChecklist();
-    } catch (_) {}
-  };
-
-  checklistAddBtn?.addEventListener('click', async () => {
-    const title = checklistNewTitle?.value?.trim();
-    if (!title) return;
-    try {
-      const res = await api('/api/checklist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title }) });
-      if (!res.ok) throw new Error();
-      checklistNewTitle.value = '';
-      loadChecklist();
-    } catch (_) {
-      checklistStatus.textContent = 'Failed to add task.';
     }
   });
 
@@ -674,6 +458,185 @@
   });
 
   document.getElementById('vendors-add-btn')?.addEventListener('click', () => openVendorModal(null, []));
+
+  // ----- Photos -----
+  const PHOTO_GROUPS = [
+    {
+      group: 'Hero',
+      description: 'Full-screen background image on the home page.',
+      layout: 'hero',
+      slots: [{ key: 'hero', label: 'Hero Photo' }],
+    },
+    {
+      group: 'Engagement Photos',
+      description: '6 photos displayed in the engagement grid.',
+      layout: 'grid',
+      slots: [
+        { key: 'engagement-1', label: 'Photo 1' },
+        { key: 'engagement-2', label: 'Photo 2' },
+        { key: 'engagement-3', label: 'Photo 3' },
+        { key: 'engagement-4', label: 'Photo 4' },
+        { key: 'engagement-5', label: 'Photo 5' },
+        { key: 'engagement-6', label: 'Photo 6' },
+      ],
+    },
+    {
+      group: 'Bridesmaids',
+      layout: 'party',
+      slots: [
+        { key: 'party-aliza', label: '[redacted]', sub: 'Maid of Honor' },
+        { key: 'party-macy', label: '[redacted]', sub: 'Bridesmaid' },
+        { key: 'party-shayleen', label: '[redacted]', sub: 'Bridesmaid' },
+        { key: 'party-kristo', label: '[redacted]', sub: 'Bridesman' },
+        { key: 'party-jasmine', label: '[redacted]', sub: 'Bridesmaid' },
+      ],
+    },
+    {
+      group: 'Groomsmen',
+      layout: 'party',
+      slots: [
+        { key: 'party-ryan', label: '[redacted]', sub: 'Best Man' },
+        { key: 'party-bobby', label: '[redacted]', sub: 'Groomsman' },
+        { key: 'party-kodi', label: '[redacted]', sub: 'Groomsman' },
+        { key: 'party-zack', label: '[redacted]', sub: 'Groomsman' },
+        { key: 'party-matt', label: '[redacted]', sub: 'Groomsman' },
+      ],
+    },
+  ];
+
+  const photosPanel = document.getElementById('panel-photos');
+
+  const renderSlotHtml = (slot, url, layout) => {
+    const preview = url
+      ? `<img src="${url}" class="w-full h-full object-cover" alt="" />`
+      : '';
+
+    if (layout === 'hero') {
+      return `
+        <div class="flex flex-col sm:flex-row gap-4 items-start">
+          <div class="w-full sm:w-72 aspect-video rounded-xl overflow-hidden shrink-0 placeholder-img">${preview}</div>
+          <div class="flex flex-col gap-2 pt-1">
+            <label class="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-magenta text-white text-sm font-semibold cursor-pointer hover:bg-magenta/90 transition">
+              <span>Upload photo</span>
+              <input type="file" accept="image/*" data-slot-upload="${slot.key}" class="hidden" />
+            </label>
+            <button type="button" data-slot-remove="${slot.key}" class="px-4 py-2 rounded-xl border border-blush/60 text-sm hover:border-magenta/40 transition">Remove</button>
+            <p data-slot-status="${slot.key}" class="text-xs text-charcoal/70 min-h-[1em]"></p>
+          </div>
+        </div>`;
+    }
+
+    if (layout === 'grid') {
+      return `
+        <div class="space-y-2">
+          <div class="aspect-[4/5] rounded-xl overflow-hidden placeholder-img">${preview}</div>
+          <p class="text-xs font-medium text-charcoal/80 text-center">${escapeHtml(slot.label)}</p>
+          <div class="flex gap-2 flex-wrap justify-center">
+            <label class="px-3 py-1 rounded-lg bg-magenta text-white text-xs font-semibold cursor-pointer hover:bg-magenta/90 transition">
+              <span>Upload</span>
+              <input type="file" accept="image/*" data-slot-upload="${slot.key}" class="hidden" />
+            </label>
+            <button type="button" data-slot-remove="${slot.key}" class="px-3 py-1 rounded-lg border border-blush/60 text-xs hover:border-magenta/40 transition">Remove</button>
+          </div>
+          <p data-slot-status="${slot.key}" class="text-xs text-charcoal/70 text-center min-h-[1em]"></p>
+        </div>`;
+    }
+
+    return `
+      <div class="p-3 bg-subtle rounded-xl border border-blush/40 flex gap-3 items-center">
+        <div class="w-16 h-16 rounded-lg overflow-hidden placeholder-img shrink-0">${preview}</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold text-charcoal">${escapeHtml(slot.label)}</p>
+          ${slot.sub ? `<p class="text-xs text-charcoal/70">${escapeHtml(slot.sub)}</p>` : ''}
+          <div class="flex gap-2 mt-1.5 flex-wrap">
+            <label class="px-2 py-1 rounded-lg bg-magenta text-white text-xs font-semibold cursor-pointer hover:bg-magenta/90 transition">
+              <span>Upload</span>
+              <input type="file" accept="image/*" data-slot-upload="${slot.key}" class="hidden" />
+            </label>
+            <button type="button" data-slot-remove="${slot.key}" class="px-2 py-1 rounded-lg border border-blush/60 text-xs hover:border-magenta/40 transition">Remove</button>
+          </div>
+          <p data-slot-status="${slot.key}" class="text-xs text-charcoal/70 mt-1 min-h-[1em]"></p>
+        </div>
+      </div>`;
+  };
+
+  const loadPhotos = async () => {
+    if (!token) return;
+    try {
+      const res = await api('/api/settings');
+      if (!res.ok) throw new Error();
+      const settings = await res.json();
+      const photos = settings.photos || {};
+
+      photosPanel.innerHTML = PHOTO_GROUPS.map(({ group, description, layout, slots }) => {
+        const slotsHtml = slots.map((slot) => renderSlotHtml(slot, photos[slot.key], layout)).join('');
+        const inner = layout === 'grid'
+          ? `<div class="grid grid-cols-2 sm:grid-cols-3 gap-4">${slotsHtml}</div>`
+          : `<div class="space-y-3">${slotsHtml}</div>`;
+        return `
+          <section class="bg-surface border border-blush/50 rounded-2xl shadow-sm p-6 space-y-4">
+            <h3 class="text-lg font-semibold text-charcoal">${escapeHtml(group)}</h3>
+            ${description ? `<p class="text-sm text-charcoal/70">${escapeHtml(description)}</p>` : ''}
+            ${inner}
+          </section>`;
+      }).join('');
+    } catch (_) {
+      photosPanel.innerHTML = '<p class="text-sm text-magenta">Could not load photos.</p>';
+    }
+  };
+
+  photosPanel?.addEventListener('change', (e) => {
+    const input = e.target.closest('[data-slot-upload]');
+    if (!input || !input.files?.[0]) return;
+    const slot = input.getAttribute('data-slot-upload');
+    const file = input.files[0];
+    const statusEl = photosPanel.querySelector(`[data-slot-status="${slot}"]`);
+    if (statusEl) statusEl.textContent = 'Uploading...';
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = reader.result;
+      const commaIdx = dataUrl.indexOf(',');
+      const base64 = dataUrl.slice(commaIdx + 1);
+      const contentType = dataUrl.slice(5, commaIdx).replace(';base64', '');
+      try {
+        const res = await api('/api/settings', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ photoUpload: { slot, data: base64, contentType } }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || 'Upload failed');
+        }
+        if (statusEl) statusEl.textContent = 'Uploaded!';
+        loadPhotos();
+      } catch (err) {
+        if (statusEl) statusEl.textContent = err.message || 'Upload failed.';
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+
+  photosPanel?.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-slot-remove]');
+    if (!btn) return;
+    const slot = btn.getAttribute('data-slot-remove');
+    const statusEl = photosPanel.querySelector(`[data-slot-status="${slot}"]`);
+    if (statusEl) statusEl.textContent = 'Removing...';
+    try {
+      const res = await api('/api/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photoDelete: { slot } }),
+      });
+      if (!res.ok) throw new Error();
+      if (statusEl) statusEl.textContent = 'Removed.';
+      loadPhotos();
+    } catch (_) {
+      if (statusEl) statusEl.textContent = 'Failed to remove.';
+    }
+  });
 
   // ----- Init -----
   loginBtn?.addEventListener('click', login);

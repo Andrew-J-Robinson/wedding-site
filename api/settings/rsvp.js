@@ -11,5 +11,6 @@ module.exports = async function handler(req, res) {
   res.json({
     rsvpOpenGlobal: settings.rsvpOpenGlobal !== false,
     events: (events || []).map((e) => ({ id: e.id, name: e.name, rsvpOpen: e.rsvp_open !== false })),
+    photos: settings.photos || {},
   });
 };
