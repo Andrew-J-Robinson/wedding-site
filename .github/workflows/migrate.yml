@@ -1,0 +1,27 @@
+name: Migrate production DB
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+
+jobs:
+  migrate:
+    name: Apply pending migrations to wedding-db-prod
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run migrations
+        run: node scripts/run-migrations.js
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}

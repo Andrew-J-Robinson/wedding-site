@@ -1,14 +1,16 @@
--- Wedding site schema for Supabase (Postgres)
--- Run this in the Supabase SQL Editor once after creating your project.
+-- Migration 001: initial schema
+-- Creates all base tables for the wedding site.
 
-create table settings (
+create table if not exists settings (
   id int primary key default 1 check (id = 1),
   data jsonb not null default '{}'::jsonb
 );
 
-insert into settings (id, data) values (1, '{"rsvpOpenGlobal": true}');
+insert into settings (id, data)
+  values (1, '{"rsvpOpenGlobal": true}')
+  on conflict (id) do nothing;
 
-create table events (
+create table if not exists events (
   id text primary key,
   name text not null,
   rsvp_open boolean not null default true,
@@ -16,13 +18,13 @@ create table events (
   created_at timestamptz not null default now()
 );
 
-create table households (
+create table if not exists households (
   id text primary key,
   name text not null,
   created_at timestamptz not null default now()
 );
 
-create table guests (
+create table if not exists guests (
   id text primary key,
   household_id text references households(id) on delete set null,
   name text not null,
@@ -35,7 +37,7 @@ create table guests (
   created_at timestamptz not null default now()
 );
 
-create table rsvps (
+create table if not exists rsvps (
   id text primary key,
   guest_id text,
   event_id text,
@@ -47,7 +49,7 @@ create table rsvps (
   created_at timestamptz not null default now()
 );
 
-create table checklist (
+create table if not exists checklist (
   id text primary key,
   title text not null,
   sort_order int not null default 0,
