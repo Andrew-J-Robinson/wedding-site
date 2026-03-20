@@ -31,12 +31,14 @@ module.exports = async function handler(req, res) {
       if (uploadError) return res.status(500).json({ error: uploadError.message });
 
       const { data: urlData } = supabase.storage.from('photos').getPublicUrl(slot);
+      const baseUrl = urlData.publicUrl;
+      const versionedUrl = `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}v=${Date.now()}`;
       const { data: row } = await supabase.from('settings').select('data').eq('id', 1).single();
       const current = row?.data || {};
-      const next = { ...current, photos: { ...(current.photos || {}), [slot]: urlData.publicUrl } };
+      const next = { ...current, photos: { ...(current.photos || {}), [slot]: versionedUrl } };
       const { error: saveError } = await supabase.from('settings').update({ data: next }).eq('id', 1);
       if (saveError) return res.status(500).json({ error: saveError.message });
-      return res.json({ url: urlData.publicUrl });
+      return res.json({ url: versionedUrl });
     }
 
     if (body.photoDelete) {

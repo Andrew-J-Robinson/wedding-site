@@ -804,6 +804,7 @@
           throw new Error(err.error || 'Upload failed');
         }
         if (statusEl) statusEl.textContent = 'Uploaded!';
+        input.value = '';
         loadPhotos();
       } catch (err) {
         if (statusEl) statusEl.textContent = err.message || 'Upload failed.';
