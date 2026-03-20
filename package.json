@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Responsive wedding website with RSVP and admin dashboard",
   "scripts": {
-    "migrate": "node --env-file=.env scripts/run-migrations.js"
+    "migrate": "node --env-file=.env scripts/run-migrations.js",
+    "test": "node --test",
+    "test:watch": "node --test --watch"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.3",
