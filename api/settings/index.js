@@ -1,13 +1,6 @@
 const supabase = require('../_lib/supabase');
 const { verifyAuth } = require('../_lib/auth');
-
-function publicSettingsPayload(settings) {
-  return {
-    rsvpOpenGlobal: settings.rsvpOpenGlobal !== false,
-    photos: settings.photos || {},
-    party: settings.party || [],
-  };
-}
+const { publicSettingsPayload } = require('../_lib/publicSettingsPayload');
 
 module.exports = async function handler(req, res) {
   if (req.method === 'GET') {

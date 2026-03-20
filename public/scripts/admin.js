@@ -85,6 +85,8 @@
       refreshRsvps();
     } else if (current === 'rsvp-controls') {
       loadRsvpControls();
+    } else if (current === 'site-content') {
+      loadSiteContent();
     } else if (current === 'photos') {
       loadPhotos();
     }
@@ -237,6 +239,249 @@
     div.textContent = s;
     return div.innerHTML;
   };
+
+
+  // ----- Site copy (home page) -----
+  const siteContentPanel = document.getElementById('panel-site-content');
+
+  function splitParagraphs(text) {
+    return String(text || '')
+      .split(/\n\s*\n/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+
+  function joinParagraphs(arr) {
+    return (arr || []).map((p) => String(p).trim()).filter(Boolean).join('\n\n');
+  }
+
+  function addScheduleRow(container, item = {}) {
+    const wrap = document.createElement('div');
+    wrap.setAttribute('data-sc-schedule-row', '');
+    wrap.className = 'flex flex-col gap-2 p-3 bg-subtle rounded-xl border border-blush/40';
+    wrap.innerHTML = `
+      <div class="flex flex-wrap gap-2 items-end">
+        <label class="flex-1 min-w-[100px]"><span class="text-xs text-charcoal/70">Time</span>
+          <input type="text" data-sc-sch-time class="w-full px-2 py-2 rounded-lg border border-blush/60 text-sm" />
+        </label>
+        <label class="flex-[2] min-w-[140px]"><span class="text-xs text-charcoal/70">Title</span>
+          <input type="text" data-sc-sch-title class="w-full px-2 py-2 rounded-lg border border-blush/60 text-sm" />
+        </label>
+      </div>
+      <label class="block"><span class="text-xs text-charcoal/70">Detail</span>
+        <input type="text" data-sc-sch-detail class="w-full px-2 py-2 rounded-lg border border-blush/60 text-sm" />
+      </label>
+      <button type="button" data-sc-schedule-remove class="self-start px-2 py-1 text-xs text-magenta border border-blush/60 rounded-lg">Remove</button>
+    `;
+    wrap.querySelector('[data-sc-sch-time]').value = item.time || '';
+    wrap.querySelector('[data-sc-sch-title]').value = item.title || '';
+    wrap.querySelector('[data-sc-sch-detail]').value = item.detail || '';
+    container.appendChild(wrap);
+  }
+
+  function addQaRow(container, item = {}) {
+    const wrap = document.createElement('div');
+    wrap.setAttribute('data-sc-qa-row', '');
+    wrap.className = 'space-y-2 p-3 bg-subtle rounded-xl border border-blush/40';
+    wrap.innerHTML = `
+      <label class="block"><span class="text-xs text-charcoal/70">Question</span>
+        <input type="text" data-sc-qa-q class="w-full px-2 py-2 rounded-lg border border-blush/60 text-sm" />
+      </label>
+      <label class="block"><span class="text-xs text-charcoal/70">Answer</span>
+        <textarea data-sc-qa-a rows="3" class="w-full px-2 py-2 rounded-lg border border-blush/60 text-sm"></textarea>
+      </label>
+      <label class="inline-flex items-center gap-2 text-sm">
+        <input type="checkbox" data-sc-qa-open />
+        <span>Open by default</span>
+      </label>
+      <button type="button" data-sc-qa-remove class="px-2 py-1 text-xs text-magenta border border-blush/60 rounded-lg">Remove</button>
+    `;
+    wrap.querySelector('[data-sc-qa-q]').value = item.question || '';
+    wrap.querySelector('[data-sc-qa-a]').value = item.answer || '';
+    wrap.querySelector('[data-sc-qa-open]').checked = !!item.open;
+    container.appendChild(wrap);
+  }
+
+  function addTravelBlock(container, block = {}) {
+    const wrap = document.createElement('div');
+    wrap.setAttribute('data-sc-travel-block', '');
+    wrap.className = 'space-y-2 p-3 bg-subtle rounded-xl border border-blush/40';
+    wrap.innerHTML = `
+      <label class="block"><span class="text-xs text-charcoal/70">Heading</span>
+        <input type="text" data-sc-travel-heading class="w-full px-2 py-2 rounded-lg border border-blush/60 text-sm" />
+      </label>
+      <label class="block"><span class="text-xs text-charcoal/70">Paragraphs (blank line between)</span>
+        <textarea data-sc-travel-paras rows="4" class="w-full px-2 py-2 rounded-lg border border-blush/60 text-sm font-mono"></textarea>
+      </label>
+      <button type="button" data-sc-travel-remove class="px-2 py-1 text-xs text-magenta border border-blush/60 rounded-lg">Remove block</button>
+    `;
+    wrap.querySelector('[data-sc-travel-heading]').value = block.heading || '';
+    wrap.querySelector('[data-sc-travel-paras]').value = joinParagraphs(block.paragraphs || []);
+    container.appendChild(wrap);
+  }
+
+  function readSiteContentFromForm() {
+    const scheduleItems = [...document.querySelectorAll('[data-sc-schedule-row]')]
+      .map((row) => ({
+        time: row.querySelector('[data-sc-sch-time]')?.value?.trim() || '',
+        title: row.querySelector('[data-sc-sch-title]')?.value?.trim() || '',
+        detail: row.querySelector('[data-sc-sch-detail]')?.value?.trim() || '',
+      }))
+      .filter((it) => it.time || it.title || it.detail);
+
+    const travelCol = (container) =>
+      [...container.querySelectorAll('[data-sc-travel-block]')]
+        .map((block) => ({
+          heading: block.querySelector('[data-sc-travel-heading]')?.value?.trim() || '',
+          paragraphs: splitParagraphs(block.querySelector('[data-sc-travel-paras]')?.value || ''),
+        }))
+        .filter((b) => b.heading || b.paragraphs.length);
+
+    const col0El = document.getElementById('sc-travel-col-0-blocks');
+    const col1El = document.getElementById('sc-travel-col-1-blocks');
+
+    const qaItems = [...document.querySelectorAll('[data-sc-qa-row]')]
+      .map((row) => ({
+        question: row.querySelector('[data-sc-qa-q]')?.value?.trim() || '',
+        answer: row.querySelector('[data-sc-qa-a]')?.value?.trim() || '',
+        open: !!row.querySelector('[data-sc-qa-open]')?.checked,
+      }))
+      .filter((it) => it.question || it.answer);
+
+    return {
+      hero: {
+        kicker: document.getElementById('sc-hero-kicker')?.value?.trim() || '',
+        names: document.getElementById('sc-hero-names')?.value?.trim() || '',
+        dateLine: document.getElementById('sc-hero-date-line')?.value?.trim() || '',
+        blurb: document.getElementById('sc-hero-blurb')?.value?.trim() || '',
+        ctaRsvp: document.getElementById('sc-hero-cta-rsvp')?.value?.trim() || '',
+        ctaStory: document.getElementById('sc-hero-cta-story')?.value?.trim() || '',
+      },
+      howWeMet: {
+        eyebrow: document.getElementById('sc-how-eyebrow')?.value?.trim() || '',
+        title: document.getElementById('sc-how-title')?.value?.trim() || '',
+        paragraphs: splitParagraphs(document.getElementById('sc-how-paragraphs')?.value || ''),
+      },
+      schedule: {
+        eyebrow: document.getElementById('sc-schedule-eyebrow')?.value?.trim() || '',
+        title: document.getElementById('sc-schedule-title')?.value?.trim() || '',
+        items: scheduleItems,
+      },
+      travel: {
+        eyebrow: document.getElementById('sc-travel-eyebrow')?.value?.trim() || '',
+        title: document.getElementById('sc-travel-title')?.value?.trim() || '',
+        columns: [travelCol(col0El), travelCol(col1El)],
+      },
+      qa: {
+        eyebrow: document.getElementById('sc-qa-eyebrow')?.value?.trim() || '',
+        title: document.getElementById('sc-qa-title')?.value?.trim() || '',
+        items: qaItems,
+      },
+      footnote: {
+        text: document.getElementById('sc-footnote-text')?.value?.trim() || '',
+      },
+    };
+  }
+
+  async function loadSiteContent() {
+    if (!token) return;
+    const statusEl = document.getElementById('sc-status');
+    if (statusEl) statusEl.textContent = 'Loading...';
+    try {
+      const res = await api('/api/settings');
+      if (!res.ok) throw new Error();
+      const settings = await res.json();
+      const c = typeof mergeSiteContent === 'function' ? mergeSiteContent(settings.siteContent) : {};
+
+      document.getElementById('sc-hero-kicker').value = c.hero.kicker || '';
+      document.getElementById('sc-hero-names').value = c.hero.names || '';
+      document.getElementById('sc-hero-date-line').value = c.hero.dateLine || '';
+      document.getElementById('sc-hero-blurb').value = c.hero.blurb || '';
+      document.getElementById('sc-hero-cta-rsvp').value = c.hero.ctaRsvp || '';
+      document.getElementById('sc-hero-cta-story').value = c.hero.ctaStory || '';
+
+      document.getElementById('sc-how-eyebrow').value = c.howWeMet.eyebrow || '';
+      document.getElementById('sc-how-title').value = c.howWeMet.title || '';
+      document.getElementById('sc-how-paragraphs').value = joinParagraphs(c.howWeMet.paragraphs);
+
+      document.getElementById('sc-schedule-eyebrow').value = c.schedule.eyebrow || '';
+      document.getElementById('sc-schedule-title').value = c.schedule.title || '';
+      const schedRows = document.getElementById('sc-schedule-rows');
+      schedRows.innerHTML = '';
+      (c.schedule.items || []).forEach((item) => addScheduleRow(schedRows, item));
+      if (!(c.schedule.items || []).length) addScheduleRow(schedRows, {});
+
+      document.getElementById('sc-travel-eyebrow').value = c.travel.eyebrow || '';
+      document.getElementById('sc-travel-title').value = c.travel.title || '';
+      const col0 = document.getElementById('sc-travel-col-0-blocks');
+      const col1 = document.getElementById('sc-travel-col-1-blocks');
+      col0.innerHTML = '';
+      col1.innerHTML = '';
+      const cols = c.travel.columns || [[], []];
+      (cols[0] || []).forEach((b) => addTravelBlock(col0, b));
+      (cols[1] || []).forEach((b) => addTravelBlock(col1, b));
+      if (!(cols[0] || []).length) addTravelBlock(col0, {});
+      if (!(cols[1] || []).length) addTravelBlock(col1, {});
+
+      document.getElementById('sc-qa-eyebrow').value = c.qa.eyebrow || '';
+      document.getElementById('sc-qa-title').value = c.qa.title || '';
+      const qaRows = document.getElementById('sc-qa-rows');
+      qaRows.innerHTML = '';
+      (c.qa.items || []).forEach((item) => addQaRow(qaRows, item));
+      if (!(c.qa.items || []).length) addQaRow(qaRows, {});
+
+      document.getElementById('sc-footnote-text').value = c.footnote.text || '';
+
+      if (statusEl) statusEl.textContent = '';
+    } catch (_) {
+      if (statusEl) statusEl.textContent = 'Could not load site copy.';
+    }
+  }
+
+  siteContentPanel?.addEventListener('click', (e) => {
+    if (e.target.closest('[data-sc-schedule-remove]')) {
+      e.target.closest('[data-sc-schedule-row]')?.remove();
+      return;
+    }
+    if (e.target.closest('[data-sc-qa-remove]')) {
+      e.target.closest('[data-sc-qa-row]')?.remove();
+      return;
+    }
+    if (e.target.closest('[data-sc-travel-remove]')) {
+      e.target.closest('[data-sc-travel-block]')?.remove();
+    }
+  });
+
+  document.getElementById('sc-schedule-add')?.addEventListener('click', () => {
+    addScheduleRow(document.getElementById('sc-schedule-rows'), {});
+  });
+  document.getElementById('sc-qa-add')?.addEventListener('click', () => {
+    addQaRow(document.getElementById('sc-qa-rows'), {});
+  });
+  document.getElementById('sc-travel-col-0-add')?.addEventListener('click', () => {
+    addTravelBlock(document.getElementById('sc-travel-col-0-blocks'), {});
+  });
+  document.getElementById('sc-travel-col-1-add')?.addEventListener('click', () => {
+    addTravelBlock(document.getElementById('sc-travel-col-1-blocks'), {});
+  });
+
+  document.getElementById('sc-save')?.addEventListener('click', async () => {
+    const statusEl = document.getElementById('sc-status');
+    if (!token) return;
+    if (statusEl) statusEl.textContent = 'Saving...';
+    try {
+      const siteContent = readSiteContentFromForm();
+      const res = await api('/api/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ siteContent }),
+      });
+      if (!res.ok) throw new Error();
+      if (statusEl) statusEl.textContent = 'Saved.';
+    } catch (_) {
+      if (statusEl) statusEl.textContent = 'Save failed.';
+    }
+  });
 
   const deleteGuest = async (id) => {
     if (!confirm('Remove this guest?')) return;

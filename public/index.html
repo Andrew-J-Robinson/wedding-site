@@ -83,13 +83,13 @@
       <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
       <div class="absolute inset-0 bg-charcoal/55"></div>
       <div class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center text-white">
-        <p class="uppercase tracking-[0.25em] text-xs text-blush mb-4 drop-shadow-lg">We're getting married</p>
-        <h1 class="text-5xl sm:text-6xl md:text-7xl font-display font-semibold mb-4 drop-shadow-lg">Andrew &amp; Miranda</h1>
-        <p class="text-xl sm:text-2xl text-white/95 mb-4 drop-shadow-lg">Saturday, September 5, 2026 &middot; Marysville, Ohio</p>
-        <p class="text-lg text-white/90 max-w-xl mx-auto mb-8 drop-shadow-lg">We can't wait to celebrate with you. Please join us for a weekend of love, laughter, and great wine.</p>
+        <p id="site-hero-kicker" class="uppercase tracking-[0.25em] text-xs text-blush mb-4 drop-shadow-lg"></p>
+        <h1 id="site-hero-names" class="text-5xl sm:text-6xl md:text-7xl font-display font-semibold mb-4 drop-shadow-lg"></h1>
+        <p id="site-hero-date-line" class="text-xl sm:text-2xl text-white/95 mb-4 drop-shadow-lg"></p>
+        <p id="site-hero-blurb" class="text-lg text-white/90 max-w-xl mx-auto mb-8 drop-shadow-lg"></p>
         <div class="flex flex-col sm:flex-row justify-center gap-3">
-          <a href="/rsvp" class="inline-flex items-center justify-center px-8 py-4 rounded-full bg-magenta text-white font-semibold shadow-lg hover:bg-magenta/90 transition">RSVP</a>
-          <a href="#how-we-met" class="inline-flex items-center justify-center px-6 py-4 rounded-full border-2 border-white/80 text-white font-semibold hover:bg-white/10 transition">How We Met</a>
+          <a id="site-hero-cta-rsvp" href="/rsvp" class="inline-flex items-center justify-center px-8 py-4 rounded-full bg-magenta text-white font-semibold shadow-lg hover:bg-magenta/90 transition"></a>
+          <a id="site-hero-cta-story" href="#how-we-met" class="inline-flex items-center justify-center px-6 py-4 rounded-full border-2 border-white/80 text-white font-semibold hover:bg-white/10 transition"></a>
         </div>
       </div>
     </section>
@@ -98,10 +98,9 @@
     <section id="how-we-met" class="bg-blush/30 py-16 sm:py-20">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 grid md:grid-cols-2 gap-12 items-center">
         <div class="space-y-4">
-          <p class="uppercase tracking-[0.25em] text-xs text-lavender">How We Met</p>
-          <h2 class="text-3xl sm:text-4xl font-display text-charcoal">From first hello to forever</h2>
-          <p class="text-charcoal/90 leading-relaxed">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris fermentum, nibh at tempus posuere, arcu risus facilisis lorem, at auctor dolor lorem non arcu.</p>
-          <p class="text-charcoal/90 leading-relaxed">Suspendisse potenti. Integer vitae justo vel nisl dignissim bibendum nec eget lorem, vitae convallis mi urna at nibh.</p>
+          <p id="site-how-eyebrow" class="uppercase tracking-[0.25em] text-xs text-lavender"></p>
+          <h2 id="site-how-title" class="text-3xl sm:text-4xl font-display text-charcoal"></h2>
+          <div id="site-how-paragraphs" class="space-y-4"></div>
         </div>
         <img data-photo="how-we-met" alt="Bride and Groom" class="w-full aspect-[5/4] object-cover rounded-2xl placeholder-img" />
       </div>
@@ -136,59 +135,19 @@
 
     <!-- Schedule -->
     <section id="schedule" class="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
-      <p class="uppercase tracking-[0.25em] text-xs text-lavender">Schedule</p>
-      <h2 class="text-3xl sm:text-4xl font-display text-charcoal mb-10">Day of timeline</h2>
-      <div class="max-w-2xl space-y-6">
-        <div class="flex gap-6 items-start">
-          <div class="w-24 shrink-0 font-semibold text-magenta">3:00 PM</div>
-          <div>
-            <h3 class="font-semibold text-charcoal">Guests arrive</h3>
-            <p class="text-charcoal/80 text-sm mt-1">Please arrive and find your seat before the ceremony begins.</p>
-          </div>
-        </div>
-        <div class="flex gap-6 items-start">
-          <div class="w-24 shrink-0 font-semibold text-magenta">3:30 PM</div>
-          <div>
-            <h3 class="font-semibold text-charcoal">Ceremony</h3>
-            <p class="text-charcoal/80 text-sm mt-1">We say &ldquo;I do.&rdquo;</p>
-          </div>
-        </div>
-        <div class="flex gap-6 items-start">
-          <div class="w-24 shrink-0 font-semibold text-magenta">4:30 PM</div>
-          <div>
-            <h3 class="font-semibold text-charcoal">Cocktail hour</h3>
-            <p class="text-charcoal/80 text-sm mt-1">Drinks and mingling.</p>
-          </div>
-        </div>
-        <div class="flex gap-6 items-start">
-          <div class="w-24 shrink-0 font-semibold text-magenta">6:00 PM</div>
-          <div>
-            <h3 class="font-semibold text-charcoal">Dinner &amp; dancing</h3>
-            <p class="text-charcoal/80 text-sm mt-1">Celebrate with us into the night.</p>
-          </div>
-        </div>
-      </div>
+      <p id="site-schedule-eyebrow" class="uppercase tracking-[0.25em] text-xs text-lavender"></p>
+      <h2 id="site-schedule-title" class="text-3xl sm:text-4xl font-display text-charcoal mb-10"></h2>
+      <div id="site-schedule-items" class="max-w-2xl space-y-6"></div> 
     </section>
 
     <!-- Travel & Stay -->
     <section id="travel" class="bg-blush/30 py-16 sm:py-20">
       <div class="max-w-6xl mx-auto px-4 sm:px-6">
-        <p class="uppercase tracking-[0.25em] text-xs text-lavender">Travel &amp; Stay</p>
-        <h2 class="text-3xl sm:text-4xl font-display text-charcoal mb-8">Getting there</h2>
+        <p id="site-travel-eyebrow" class="uppercase tracking-[0.25em] text-xs text-lavender"></p>
+        <h2 id="site-travel-title" class="text-3xl sm:text-4xl font-display text-charcoal mb-8"></h2>
         <div class="grid md:grid-cols-2 gap-8">
-          <div class="space-y-4">
-            <h3 class="font-semibold text-charcoal text-lg">Venue</h3>
-            <p class="text-charcoal/90">Marysville, Ohio</p>
-            <p class="text-charcoal/80 text-sm">Address and directions will be provided on your invitation.</p>
-            <h3 class="font-semibold text-charcoal text-lg mt-6">Parking</h3>
-            <p class="text-charcoal/90">Parking is available in the field adjacent to the driveway. Please follow the signs to the parking area.</p>
-          </div>
-          <div class="space-y-4">
-            <h3 class="font-semibold text-charcoal text-lg">Where to stay</h3>
-            <p class="text-charcoal/90">We recommend booking accommodations in Marysville or nearby Dublin/Columbus. Block details coming soon.</p>
-            <h3 class="font-semibold text-charcoal text-lg mt-6">Airports</h3>
-            <p class="text-charcoal/90">Columbus John Glenn International (CMH) is the nearest airport, about 45 minutes from Marysville.</p>
-          </div>
+          <div id="site-travel-col-0" class="space-y-4"></div>
+          <div id="site-travel-col-1" class="space-y-4"></div>
         </div>
       </div>
     </section>
@@ -196,37 +155,120 @@
     <!-- Q&A -->
     <section id="qa" class="bg-blush/20 py-16 sm:py-20">
       <div class="max-w-6xl mx-auto px-4 sm:px-6">
-        <p class="uppercase tracking-[0.25em] text-xs text-lavender">Q &amp; A</p>
-        <h2 class="text-3xl sm:text-4xl font-display text-charcoal mb-6">Details &amp; logistics</h2>
-        <div class="divide-y divide-blush/60 border border-blush/50 rounded-2xl bg-surface max-w-3xl">
-          <details class="p-4" open>
-            <summary class="flex justify-between items-center cursor-pointer font-semibold text-charcoal">What time should I arrive? <span class="text-magenta">+</span></summary>
-            <p class="mt-2 text-charcoal/90">Please arrive by 3:00 PM to be seated before the ceremony begins at 3:30 PM.</p>
-          </details>
-          <details class="p-4">
-            <summary class="flex justify-between items-center cursor-pointer font-semibold text-charcoal">Is there a dress code? <span class="text-magenta">+</span></summary>
-            <p class="mt-2 text-charcoal/90">Dress is dressy casual. We'll be outside so please dress for the weather.</p>
-          </details>
-          <details class="p-4">
-            <summary class="flex justify-between items-center cursor-pointer font-semibold text-charcoal">Where do I park? <span class="text-magenta">+</span></summary>
-            <p class="mt-2 text-charcoal/90">Parking is available in the field adjacent to the driveway. Please follow the signs to the parking area.</p>
-          </details>
-          <details class="p-4">
-            <summary class="flex justify-between items-center cursor-pointer font-semibold text-charcoal">Can I bring a plus-one? <span class="text-magenta">+</span></summary>
-            <p class="mt-2 text-charcoal/90">We have planned seating carefully; please refer to your invitation for plus-one details.</p>
-          </details>
-        </div>
+        <p id="site-qa-eyebrow" class="uppercase tracking-[0.25em] text-xs text-lavender"></p>
+        <h2 id="site-qa-title" class="text-3xl sm:text-4xl font-display text-charcoal mb-6"></h2>
+        <div id="site-qa-items" class="divide-y divide-blush/60 border border-blush/50 rounded-2xl bg-surface max-w-3xl"></div>  
       </div>
     </section>
   </main>
 
   <footer class="border-t border-blush/60 py-8 text-center text-sm text-charcoal/70 bg-wedding-bg">
-    <p>We're so excited to celebrate with you in Marysville.</p>
+    <p id="site-footnote-text"></p>
   </footer>
 
+  <script src="/scripts/site-content-defaults.js"></script>
   <script>
     (async () => {
       function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+      function renderTravelColumn(el, blocks) {
+        el.textContent = '';
+        (blocks || []).forEach(function (block, bi) {
+          var h3 = document.createElement('h3');
+          h3.className = 'font-semibold text-charcoal text-lg' + (bi > 0 ? ' mt-6' : '');
+          h3.textContent = block.heading || '';
+          el.appendChild(h3);
+          var paras = block.paragraphs || [];
+          paras.forEach(function (para, pi) {
+            var p = document.createElement('p');
+            p.className = paras.length > 1 && pi > 0 ? 'text-charcoal/80 text-sm' : 'text-charcoal/90';
+            p.textContent = para;
+            el.appendChild(p);
+          });
+        });
+      }
+
+      function renderSiteContent(c) {
+        var h = c.hero || {};
+        document.getElementById('site-hero-kicker').textContent = h.kicker || '';
+        document.getElementById('site-hero-names').textContent = h.names || '';
+        document.getElementById('site-hero-date-line').textContent = h.dateLine || '';
+        document.getElementById('site-hero-blurb').textContent = h.blurb || '';
+        document.getElementById('site-hero-cta-rsvp').textContent = h.ctaRsvp || '';
+        document.getElementById('site-hero-cta-story').textContent = h.ctaStory || '';
+
+        var hw = c.howWeMet || {};
+        document.getElementById('site-how-eyebrow').textContent = hw.eyebrow || '';
+        document.getElementById('site-how-title').textContent = hw.title || '';
+        var howParaEl = document.getElementById('site-how-paragraphs');
+        howParaEl.textContent = '';
+        (hw.paragraphs || []).forEach(function (text) {
+          var p = document.createElement('p');
+          p.className = 'text-charcoal/90 leading-relaxed';
+          p.textContent = text;
+          howParaEl.appendChild(p);
+        });
+
+        var sch = c.schedule || {};
+        document.getElementById('site-schedule-eyebrow').textContent = sch.eyebrow || '';
+        document.getElementById('site-schedule-title').textContent = sch.title || '';
+        var schedEl = document.getElementById('site-schedule-items');
+        schedEl.textContent = '';
+        (sch.items || []).forEach(function (item) {
+          var row = document.createElement('div');
+          row.className = 'flex gap-6 items-start';
+          var time = document.createElement('div');
+          time.className = 'w-24 shrink-0 font-semibold text-magenta';
+          time.textContent = item.time || '';
+          var body = document.createElement('div');
+          var h3 = document.createElement('h3');
+          h3.className = 'font-semibold text-charcoal';
+          h3.textContent = item.title || '';
+          var det = document.createElement('p');
+          det.className = 'text-charcoal/80 text-sm mt-1';
+          det.textContent = item.detail || '';
+          body.appendChild(h3);
+          body.appendChild(det);
+          row.appendChild(time);
+          row.appendChild(body);
+          schedEl.appendChild(row);
+        });
+
+        var tr = c.travel || {};
+        document.getElementById('site-travel-eyebrow').textContent = tr.eyebrow || '';
+        document.getElementById('site-travel-title').textContent = tr.title || '';
+        var cols = tr.columns || [[], []];
+        renderTravelColumn(document.getElementById('site-travel-col-0'), cols[0] || []);
+        renderTravelColumn(document.getElementById('site-travel-col-1'), cols[1] || []);
+
+        var qa = c.qa || {};
+        document.getElementById('site-qa-eyebrow').textContent = qa.eyebrow || '';
+        document.getElementById('site-qa-title').textContent = qa.title || '';
+        var qaEl = document.getElementById('site-qa-items');
+        qaEl.textContent = '';
+        (qa.items || []).forEach(function (item) {
+          var det = document.createElement('details');
+          det.className = 'p-4';
+          if (item.open) det.setAttribute('open', '');
+          var sum = document.createElement('summary');
+          sum.className = 'flex justify-between items-center cursor-pointer font-semibold text-charcoal';
+          var qSpan = document.createElement('span');
+          qSpan.textContent = item.question || '';
+          var plus = document.createElement('span');
+          plus.className = 'text-magenta';
+          plus.textContent = '+';
+          sum.appendChild(qSpan);
+          sum.appendChild(plus);
+          var ans = document.createElement('p');
+          ans.className = 'mt-2 text-charcoal/90';
+          ans.textContent = item.answer || '';
+          det.appendChild(sum);
+          det.appendChild(ans);
+          qaEl.appendChild(det);
+        });
+
+        document.getElementById('site-footnote-text').textContent = (c.footnote && c.footnote.text) || '';
+      }
 
       function renderParty(party, photos) {
         var sides = { bridesmaids: [], groomsmen: [] };
@@ -258,8 +300,9 @@
 
       try {
         var res = await fetch('/api/settings');
-        if (!res.ok) return;
-        var data = await res.json();
+        var data = res.ok ? await res.json() : {};
+        var content = typeof mergeSiteContent === 'function' ? mergeSiteContent(data.siteContent) : {};
+        renderSiteContent(content);
         var photos = data.photos || {};
         var party = data.party || [];
 
@@ -276,6 +319,8 @@
 
         renderParty(party, photos);
       } catch (_) {
+        var fallback = typeof mergeSiteContent === 'function' ? mergeSiteContent({}) : {};
+        renderSiteContent(fallback);
         renderParty([], {});
       }
     })();
