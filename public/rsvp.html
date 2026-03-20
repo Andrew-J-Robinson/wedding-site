@@ -8,29 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/theme.css">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'media',
-      theme: {
-        extend: {
-          colors: {
-            charcoal: 'var(--color-charcoal)',
-            lavender: 'var(--color-lavender)',
-            blush: 'var(--color-blush)',
-            magenta: 'var(--color-magenta)',
-            'wedding-bg': 'var(--color-bg)',
-            surface: 'var(--color-surface)',
-            'surface-hover': 'var(--color-surface-hover)',
-          },
-          fontFamily: {
-            display: ['Cormorant Garamond', 'Georgia', 'serif'],
-            body: ['Lora', 'Georgia', 'serif'],
-          },
-        },
-      },
-    };
-  </script>
+  <link rel="stylesheet" href="/tw.css">
   <style>
     body { font-family: 'Lora', Georgia, serif; }
     h1, h2, h3, .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
@@ -50,13 +28,31 @@
       <h1 class="text-3xl sm:text-4xl font-display text-charcoal">Let us know you'll be there</h1>
     </div>
     <div class="bg-surface border border-blush/50 rounded-2xl shadow-sm p-6 sm:p-8 space-y-6" id="rsvp-app">
-      <div id="rsvp-stepper" class="flex flex-wrap gap-2 text-sm font-medium text-charcoal/70"></div>
-      <div id="rsvp-body" class="space-y-4"></div>
-      <div class="flex justify-between items-center pt-2">
-        <button id="rsvp-prev" class="px-4 py-2 rounded-full border border-blush/60 text-charcoal disabled:opacity-50 hover:border-magenta/40 transition" disabled>Back</button>
-        <button id="rsvp-next" class="px-5 py-2 rounded-full bg-magenta text-white font-semibold hover:bg-magenta/90 transition">Next</button>
+      <div id="rsvp-loading" class="space-y-5 animate-pulse" aria-busy="true" aria-label="Loading">
+        <div class="flex flex-wrap gap-2">
+          <div class="h-8 w-36 rounded-full bg-blush/50"></div>
+          <div class="h-8 w-40 rounded-full bg-blush/40"></div>
+          <div class="h-8 w-32 rounded-full bg-blush/40"></div>
+        </div>
+        <div class="space-y-3 pt-2">
+          <div class="h-4 bg-blush/50 rounded w-28"></div>
+          <div class="h-12 bg-blush/40 rounded-xl w-full"></div>
+          <div class="h-3 bg-blush/35 rounded w-3/4"></div>
+        </div>
+        <div class="flex justify-between pt-4">
+          <div class="h-10 w-20 rounded-full bg-blush/45"></div>
+          <div class="h-10 w-24 rounded-full bg-blush/50"></div>
+        </div>
       </div>
-      <p id="rsvp-status" class="text-sm text-charcoal/70"></p>
+      <div id="rsvp-interactive" class="hidden space-y-6">
+        <div id="rsvp-stepper" class="flex flex-wrap gap-2 text-sm font-medium text-charcoal/70"></div>
+        <div id="rsvp-body" class="space-y-4"></div>
+        <div id="rsvp-nav" class="flex justify-between items-center pt-2">
+          <button id="rsvp-prev" class="px-4 py-2 rounded-full border border-blush/60 text-charcoal disabled:opacity-50 hover:border-magenta/40 transition" disabled>Back</button>
+          <button id="rsvp-next" class="px-5 py-2 rounded-full bg-magenta text-white font-semibold hover:bg-magenta/90 transition">Next</button>
+        </div>
+        <p id="rsvp-status" class="text-sm text-charcoal/70"></p>
+      </div>
     </div>
   </main>
 

@@ -22,10 +22,13 @@
     rsvpOpen: true,
   };
 
+  const loadingEl = document.getElementById('rsvp-loading');
+  const interactiveEl = document.getElementById('rsvp-interactive');
   const stepperEl = document.getElementById('rsvp-stepper');
   const bodyEl = document.getElementById('rsvp-body');
   const prevBtn = document.getElementById('rsvp-prev');
   const nextBtn = document.getElementById('rsvp-next');
+  const navEl = document.getElementById('rsvp-nav');
   const statusEl = document.getElementById('rsvp-status');
 
   const checkRsvpOpen = async () => {
@@ -58,8 +61,10 @@
       stepperEl.innerHTML = '';
       prevBtn.disabled = true;
       nextBtn.disabled = true;
+      navEl?.classList.add('hidden');
       return;
     }
+    navEl?.classList.remove('hidden');
     renderStepper();
     prevBtn.disabled = state.step === 0 || state.submitting;
     nextBtn.disabled = state.submitting;
@@ -276,6 +281,11 @@
 
   (async () => {
     await checkRsvpOpen();
+    if (loadingEl) {
+      loadingEl.classList.add('hidden');
+      loadingEl.removeAttribute('aria-busy');
+    }
+    if (interactiveEl) interactiveEl.classList.remove('hidden');
     renderStep();
   })();
 })();
