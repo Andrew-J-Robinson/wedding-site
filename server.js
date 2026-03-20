@@ -77,7 +77,7 @@ app.get('/api/settings/rsvp', async (_req, res) => {
     rsvpOpenGlobal: settings.rsvpOpenGlobal !== false,
     events: events.map((e) => ({ id: e.id, name: e.name, rsvpOpen: e.rsvpOpen !== false })),
     photos: settings.photos || {},
-    partyMembers: settings.partyMembers || {},
+    party: settings.party || [],
   });
 });
 

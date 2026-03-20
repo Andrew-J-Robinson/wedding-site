@@ -245,28 +245,12 @@
 
   <script>
     (async () => {
-      var DEFAULT_PARTY = [
-        { key: 'party-aliza', name: '[redacted]', role: 'Maid of Honor', side: 'bridesmaids' },
-        { key: 'party-macy', name: '[redacted]', role: 'Bridesmaid', side: 'bridesmaids' },
-        { key: 'party-shayleen', name: '[redacted]', role: 'Bridesmaid', side: 'bridesmaids' },
-        { key: 'party-kristo', name: '[redacted]', role: 'Bridesman', side: 'bridesmaids' },
-        { key: 'party-jasmine', name: '[redacted]', role: 'Bridesmaid', side: 'bridesmaids' },
-        { key: 'party-ryan', name: '[redacted]', role: 'Best Man', side: 'groomsmen' },
-        { key: 'party-bobby', name: '[redacted]', role: 'Groomsman', side: 'groomsmen' },
-        { key: 'party-kodi', name: '[redacted]', role: 'Groomsman', side: 'groomsmen' },
-        { key: 'party-zack', name: '[redacted]', role: 'Groomsman', side: 'groomsmen' },
-        { key: 'party-matt', name: '[redacted]', role: 'Groomsman', side: 'groomsmen' },
-      ];
-
       function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
-      function renderParty(photos, members) {
-        var party = DEFAULT_PARTY.map(function(d) {
-          var m = members[d.key] || {};
-          return { key: d.key, name: m.name || d.name, role: m.role || d.role, side: m.side || d.side };
-        });
+      function renderParty(party, photos) {
         var sides = { bridesmaids: [], groomsmen: [] };
-        party.forEach(function(m) { (sides[m.side] || sides.bridesmaids).push(m); });
+        (party || []).slice().sort(function(a, b) { return (a.order || 0) - (b.order || 0); })
+          .forEach(function(m) { (sides[m.side] || sides.bridesmaids).push(m); });
 
         function card(m) {
           var url = photos[m.key];
@@ -296,7 +280,7 @@
         if (!res.ok) return;
         var data = await res.json();
         var photos = data.photos || {};
-        var partyMembers = data.partyMembers || {};
+        var party = data.party || [];
 
         document.querySelectorAll('[data-photo]').forEach(function(el) {
           var url = photos[el.getAttribute('data-photo')];
@@ -309,9 +293,9 @@
           }
         });
 
-        renderParty(photos, partyMembers);
+        renderParty(party, photos);
       } catch (_) {
-        renderParty({}, {});
+        renderParty([], {});
       }
     })();
   </script>

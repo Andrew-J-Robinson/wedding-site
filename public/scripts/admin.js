@@ -8,6 +8,7 @@
   let token = localStorage.getItem('adminToken') || '';
   let previewData = [];
   let guests = [];
+  let partyData = [];
 
   const handleUnauthorized = () => {
     token = '';
@@ -398,28 +399,6 @@
         { key: 'engagement-6', label: 'Photo 6' },
       ],
     },
-    {
-      group: 'Bridesmaids',
-      layout: 'party',
-      slots: [
-        { key: 'party-aliza', label: '[redacted]', sub: 'Maid of Honor' },
-        { key: 'party-macy', label: '[redacted]', sub: 'Bridesmaid' },
-        { key: 'party-shayleen', label: '[redacted]', sub: 'Bridesmaid' },
-        { key: 'party-kristo', label: '[redacted]', sub: 'Bridesman' },
-        { key: 'party-jasmine', label: '[redacted]', sub: 'Bridesmaid' },
-      ],
-    },
-    {
-      group: 'Groomsmen',
-      layout: 'party',
-      slots: [
-        { key: 'party-ryan', label: '[redacted]', sub: 'Best Man' },
-        { key: 'party-bobby', label: '[redacted]', sub: 'Groomsman' },
-        { key: 'party-kodi', label: '[redacted]', sub: 'Groomsman' },
-        { key: 'party-zack', label: '[redacted]', sub: 'Groomsman' },
-        { key: 'party-matt', label: '[redacted]', sub: 'Groomsman' },
-      ],
-    },
   ];
 
   const photosPanel = document.getElementById('panel-photos');
@@ -481,6 +460,52 @@
       </div>`;
   };
 
+  const renderPartyAdminSection = (party, photos) => {
+    const sorted = [...party].sort((a, b) => (a.order || 0) - (b.order || 0));
+    const bridesmaids = sorted.filter((m) => m.side === 'bridesmaids');
+    const groomsmen = sorted.filter((m) => m.side === 'groomsmen');
+
+    const memberHtml = (m) => {
+      const url = photos[m.key] || '';
+      const preview = url ? `<img src="${url}" class="w-full h-full object-cover" alt="" />` : '';
+      return `
+        <div class="p-3 bg-subtle rounded-xl border border-blush/40 flex gap-3 items-start" data-party-key="${m.key}">
+          <div class="w-16 h-16 rounded-lg overflow-hidden placeholder-img shrink-0">${preview}</div>
+          <div class="flex-1 min-w-0 space-y-1.5">
+            <input type="text" data-member-name="${m.key}" value="${escapeHtml(m.name)}" placeholder="Name" class="w-full px-2 py-1 rounded-lg border border-blush/60 text-sm font-semibold text-charcoal" />
+            <input type="text" data-member-role="${m.key}" value="${escapeHtml(m.role)}" placeholder="Role (e.g. Bridesmaid)" class="w-full px-2 py-1 rounded-lg border border-blush/60 text-xs text-charcoal/70" />
+            <div class="flex gap-2 flex-wrap">
+              <label class="px-2 py-1 rounded-lg bg-magenta text-white text-xs font-semibold cursor-pointer hover:bg-magenta/90 transition">
+                <span>Upload photo</span>
+                <input type="file" accept="image/*" data-slot-upload="${m.key}" class="hidden" />
+              </label>
+              <button type="button" data-slot-remove="${m.key}" class="px-2 py-1 rounded-lg border border-blush/60 text-xs hover:border-magenta/40 transition">Remove photo</button>
+              <button type="button" data-member-save="${m.key}" class="px-2 py-1 rounded-lg border border-magenta text-magenta text-xs font-semibold hover:bg-magenta/10 transition">Save</button>
+              <button type="button" data-party-remove="${m.key}" class="px-2 py-1 rounded-lg border border-blush/60 text-xs text-charcoal/50 hover:border-magenta/40 hover:text-magenta transition">Remove member</button>
+            </div>
+            <p data-slot-status="${m.key}" class="text-xs text-charcoal/70 min-h-[1em]"></p>
+          </div>
+        </div>`;
+    };
+
+    const sideSection = (title, members, addSide) => `
+      <div class="space-y-3">
+        <h4 class="text-sm font-semibold uppercase tracking-wider text-charcoal/60">${title}</h4>
+        <div class="space-y-3">${members.map(memberHtml).join('')}</div>
+        <button type="button" data-party-add="${addSide}" class="px-3 py-1.5 rounded-xl border border-blush/60 text-sm text-charcoal/70 hover:border-magenta/40 hover:text-magenta transition">+ Add member</button>
+      </div>`;
+
+    return `
+      <section class="bg-surface border border-blush/50 rounded-2xl shadow-sm p-6 space-y-4">
+        <h3 class="text-lg font-semibold text-charcoal">Wedding Party</h3>
+        <p class="text-sm text-charcoal/70">Manage bridesmaids and groomsmen shown on the home page.</p>
+        <div class="space-y-6">
+          ${sideSection('Bridesmaids', bridesmaids, 'bridesmaids')}
+          ${sideSection('Groomsmen', groomsmen, 'groomsmen')}
+        </div>
+      </section>`;
+  };
+
   const loadPhotos = async () => {
     if (!token) return;
     try {
@@ -488,16 +513,10 @@
       if (!res.ok) throw new Error();
       const settings = await res.json();
       const photos = settings.photos || {};
-      const partyMembers = settings.partyMembers || {};
+      partyData = settings.party || [];
 
-      photosPanel.innerHTML = PHOTO_GROUPS.map(({ group, description, layout, slots }) => {
-        const enrichedSlots = layout === 'party'
-          ? slots.map((slot) => {
-              const m = partyMembers[slot.key] || {};
-              return { ...slot, _memberName: m.name || slot.label, _memberRole: m.role || slot.sub || '' };
-            })
-          : slots;
-        const slotsHtml = enrichedSlots.map((slot) => renderSlotHtml(slot, photos[slot.key], layout)).join('');
+      const staticHtml = PHOTO_GROUPS.map(({ group, description, layout, slots }) => {
+        const slotsHtml = slots.map((slot) => renderSlotHtml(slot, photos[slot.key], layout)).join('');
         const inner = layout === 'grid'
           ? `<div class="grid grid-cols-2 sm:grid-cols-3 gap-4">${slotsHtml}</div>`
           : `<div class="space-y-3">${slotsHtml}</div>`;
@@ -508,6 +527,8 @@
             ${inner}
           </section>`;
       }).join('');
+
+      photosPanel.innerHTML = staticHtml + renderPartyAdminSection(partyData, photos);
     } catch (_) {
       photosPanel.innerHTML = '<p class="text-sm text-magenta">Could not load photos.</p>';
     }
@@ -569,29 +590,68 @@
 
     const saveBtn = e.target.closest('[data-member-save]');
     if (saveBtn) {
-      const slot = saveBtn.getAttribute('data-member-save');
-      const nameInput = photosPanel.querySelector(`[data-member-name="${slot}"]`);
-      const roleInput = photosPanel.querySelector(`[data-member-role="${slot}"]`);
-      const statusEl = photosPanel.querySelector(`[data-slot-status="${slot}"]`);
+      const key = saveBtn.getAttribute('data-member-save');
+      const nameInput = photosPanel.querySelector(`[data-member-name="${key}"]`);
+      const roleInput = photosPanel.querySelector(`[data-member-role="${key}"]`);
+      const statusEl = photosPanel.querySelector(`[data-slot-status="${key}"]`);
       const name = nameInput?.value?.trim() || '';
       const role = roleInput?.value?.trim() || '';
       if (!name) { if (statusEl) statusEl.textContent = 'Name is required.'; return; }
       if (statusEl) statusEl.textContent = 'Saving...';
+      partyData = partyData.map((m) => (m.key === key ? { ...m, name, role } : m));
       try {
-        const settingsRes = await api('/api/settings');
-        if (!settingsRes.ok) throw new Error();
-        const current = await settingsRes.json();
-        const partyMembers = { ...(current.partyMembers || {}), [slot]: { name, role } };
         const res = await api('/api/settings', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ partyMembers }),
+          body: JSON.stringify({ party: partyData }),
         });
         if (!res.ok) throw new Error();
         if (statusEl) statusEl.textContent = 'Saved!';
       } catch (_) {
         if (statusEl) statusEl.textContent = 'Failed to save.';
       }
+      return;
+    }
+
+    const addBtn = e.target.closest('[data-party-add]');
+    if (addBtn) {
+      const side = addBtn.getAttribute('data-party-add');
+      const sideMembers = partyData.filter((m) => m.side === side);
+      const order = sideMembers.length ? Math.max(...sideMembers.map((m) => m.order || 0)) + 1 : 0;
+      const key = `party-${Date.now().toString(36)}`;
+      partyData = [...partyData, { key, name: '', role: '', side, order }];
+      try {
+        const res = await api('/api/settings', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ party: partyData }),
+        });
+        if (!res.ok) throw new Error();
+        loadPhotos();
+      } catch (_) {}
+      return;
+    }
+
+    const partyRemoveBtn = e.target.closest('[data-party-remove]');
+    if (partyRemoveBtn) {
+      const key = partyRemoveBtn.getAttribute('data-party-remove');
+      if (!confirm('Remove this party member?')) return;
+      partyData = partyData.filter((m) => m.key !== key);
+      try {
+        await api('/api/settings', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ photoDelete: { slot: key } }),
+        });
+        const res = await api('/api/settings', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ party: partyData }),
+        });
+        if (!res.ok) throw new Error();
+        loadPhotos();
+      } catch (_) {}
+      return;
     }
   });
 
