@@ -257,7 +257,7 @@
       }
 
       try {
-        var res = await fetch('/api/settings/rsvp');
+        var res = await fetch('/api/settings');
         if (!res.ok) return;
         var data = await res.json();
         var photos = data.photos || {};

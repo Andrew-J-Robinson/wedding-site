@@ -1,15 +1,29 @@
 const supabase = require('../_lib/supabase');
 const { verifyAuth } = require('../_lib/auth');
 
-module.exports = async function handler(req, res) {
-  if (!(await verifyAuth(req))) return res.status(401).json({ error: 'Unauthorized' });
+function publicSettingsPayload(settings) {
+  return {
+    rsvpOpenGlobal: settings.rsvpOpenGlobal !== false,
+    photos: settings.photos || {},
+    party: settings.party || [],
+  };
+}
 
+module.exports = async function handler(req, res) {
   if (req.method === 'GET') {
     const { data: row } = await supabase.from('settings').select('data').eq('id', 1).single();
-    return res.json(row?.data || {});
+    const settings = row?.data || {};
+
+    if (!(await verifyAuth(req))) {
+      return res.json(publicSettingsPayload(settings));
+    }
+
+    return res.json(settings);
   }
 
   if (req.method === 'PATCH') {
+    if (!(await verifyAuth(req))) return res.status(401).json({ error: 'Unauthorized' });
+
     const body = req.body || {};
 
     if (body.photoUpload) {

@@ -30,7 +30,7 @@
 
   const checkRsvpOpen = async () => {
     try {
-      const res = await fetch('/api/settings/rsvp');
+      const res = await fetch('/api/settings');
       if (!res.ok) return;
       const data = await res.json();
       state.rsvpOpen = data.rsvpOpenGlobal !== false;
@@ -166,7 +166,7 @@
   const searchGuests = async () => {
     setStatus('Searching guest list...');
     try {
-      const res = await fetch(`/api/invitees/search?name=${encodeURIComponent(state.name)}`);
+      const res = await fetch(`/api/guests?name=${encodeURIComponent(state.name)}`);
       if (!res.ok) throw new Error('Search failed');
       const data = await res.json();
       state.matches = data.results || [];
@@ -184,7 +184,7 @@
     renderStep();
     setStatus('Submitting your RSVP...');
     try {
-      const res = await fetch('/api/rsvp', {
+      const res = await fetch('/api/rsvps', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
