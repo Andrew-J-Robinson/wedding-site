@@ -2,19 +2,13 @@
   "name": "wedding-site",
   "version": "1.0.0",
   "description": "Responsive wedding website with RSVP and admin dashboard",
-  "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "NODE_ENV=development node server.js",
     "migrate": "node --env-file=.env scripts/run-migrations.js"
   },
   "dependencies": {
-    "body-parser": "^1.20.3",
-    "cors": "^2.8.5",
-    "express": "^4.19.2",
+    "@supabase/supabase-js": "^2.99.3",
     "fuse.js": "^6.6.2",
-    "jsonwebtoken": "^9.0.3",
-    "nanoid": "^3.3.11"
+    "jsonwebtoken": "^9.0.3"
   },
   "devDependencies": {
     "pg": "^8.20.0"
