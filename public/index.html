@@ -50,46 +50,82 @@
     header:not(.nav-light) .nav-logo:hover { color: var(--color-magenta); }
     header .nav-link,
     header .nav-logo { transition: color 0.2s; }
+    header .nav-menu-btn { transition: color 0.2s, border-color 0.2s; }
+    header.nav-light .nav-menu-btn { color: rgba(255,255,255,0.95); }
+    header:not(.nav-light) .nav-menu-btn { color: var(--color-charcoal); }
     @media (prefers-color-scheme: dark) {
       header:not(.nav-light) { background: rgba(26, 21, 20, 0.95); border-color: rgba(74, 66, 69, 0.6); }
       header:not(.nav-light) .nav-link,
-      header:not(.nav-light) .nav-logo { color: var(--color-charcoal); }
+      header:not(.nav-light) .nav-logo,
+      header:not(.nav-light) .nav-menu-btn { color: var(--color-charcoal); }
       header:not(.nav-light) .nav-link:hover,
       header:not(.nav-light) .nav-logo:hover { color: var(--color-magenta); }
+    }
+    #mobile-nav-drawer:not(.hidden) { pointer-events: auto; }
+    /* Hero: legibility over bright areas (e.g. white dress) */
+    #home .hero-copy {
+      text-shadow:
+        0 0 1px rgba(0, 0, 0, 0.9),
+        0 1px 2px rgba(0, 0, 0, 0.85),
+        0 4px 20px rgba(0, 0, 0, 0.55);
     }
   </style>
 </head>
 <body class="bg-wedding-bg text-charcoal">
   <header id="site-header" class="sticky top-0 z-20 backdrop-blur border-b transition-colors nav-light" data-nav-root>
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
-      <a href="#home" class="nav-logo font-display text-lg">A &amp; M</a>
-      <nav class="flex flex-wrap gap-4 sm:gap-6 text-sm font-medium">
-        <a href="#how-we-met" class="nav-link">How We Met</a>
-        <a href="#photos" class="nav-link">Photos</a>
-        <a href="#party" class="nav-link">Wedding Party</a>
-        <a href="#schedule" class="nav-link">Schedule</a>
-        <a href="#travel" class="nav-link">Travel</a>
-        <a href="#qa" class="nav-link">Q&amp;A</a>
-        <a href="/registry" class="nav-link">Registry</a>
-        <a href="/rsvp" class="nav-link font-semibold">RSVP</a>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16 gap-4">
+      <a href="#home" class="nav-logo font-display text-lg whitespace-nowrap shrink-0">A·M</a>
+      <button type="button" id="nav-menu-btn" class="nav-menu-btn md:hidden p-2 -mr-2 rounded-md border border-current/25 shrink-0" aria-expanded="false" aria-controls="mobile-nav-drawer" aria-label="Open menu">
+        <svg class="w-6 h-6 block" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path class="nav-icon-open" stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/>
+          <path class="nav-icon-close hidden" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/>
+        </svg>
+      </button>
+      <nav class="hidden md:flex items-center gap-6 text-sm font-medium flex-nowrap shrink-0" aria-label="Main">
+        <a href="#how-we-met" class="nav-link whitespace-nowrap">How We Met</a>
+        <a href="#photos" class="nav-link whitespace-nowrap">Photos</a>
+        <a href="#party" class="nav-link whitespace-nowrap">Wedding Party</a>
+        <a href="#schedule" class="nav-link whitespace-nowrap">Schedule</a>
+        <a href="#travel" class="nav-link whitespace-nowrap">Travel</a>
+        <a href="#qa" class="nav-link whitespace-nowrap">Q&amp;A</a>
+        <a href="/registry" class="nav-link whitespace-nowrap">Registry</a>
+        <a href="/rsvp" class="nav-link font-semibold whitespace-nowrap">RSVP</a>
       </nav>
     </div>
   </header>
 
+  <div id="mobile-nav-drawer" class="md:hidden hidden fixed inset-0 top-16 z-30 flex justify-end pointer-events-none" aria-hidden="true">
+    <div class="absolute inset-0 bg-charcoal/50" data-close-mobile-nav tabindex="-1"></div>
+    <nav class="relative w-[min(22rem,100vw)] h-full bg-surface border-l border-blush/60 shadow-2xl flex flex-col gap-0.5 p-6 pt-8 overflow-y-auto text-charcoal" aria-label="Main">
+      <a href="#how-we-met" class="mobile-nav-link py-3 text-base font-medium border-b border-blush/40 transition-colors hover:text-magenta">How We Met</a>
+      <a href="#photos" class="mobile-nav-link py-3 text-base font-medium border-b border-blush/40 transition-colors hover:text-magenta">Photos</a>
+      <a href="#party" class="mobile-nav-link py-3 text-base font-medium border-b border-blush/40 transition-colors hover:text-magenta">Wedding Party</a>
+      <a href="#schedule" class="mobile-nav-link py-3 text-base font-medium border-b border-blush/40 transition-colors hover:text-magenta">Schedule</a>
+      <a href="#travel" class="mobile-nav-link py-3 text-base font-medium border-b border-blush/40 transition-colors hover:text-magenta">Travel</a>
+      <a href="#qa" class="mobile-nav-link py-3 text-base font-medium border-b border-blush/40 transition-colors hover:text-magenta">Q&amp;A</a>
+      <a href="/registry" class="mobile-nav-link py-3 text-base font-medium border-b border-blush/40 transition-colors hover:text-magenta">Registry</a>
+      <a href="/rsvp" class="mobile-nav-link py-3 text-base font-semibold text-magenta transition-colors hover:text-magenta/80">RSVP</a>
+    </nav>
+  </div>
+
   <main>
     <!-- Hero - Full bleed (extends behind nav via negative margin) -->
     <section id="home" class="relative min-h-screen -mt-16 flex items-end justify-center pb-[15vh]">
-      <div class="absolute inset-0 bg-cover bg-center bg-no-repeat placeholder-img" data-photo="hero"></div>
-      <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-      <div class="absolute inset-0 bg-charcoal/55"></div>
-      <div class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center text-white">
-        <p class="uppercase tracking-[0.25em] text-xs text-blush mb-4 drop-shadow-lg">We're getting married</p>
-        <h1 class="text-5xl sm:text-6xl md:text-7xl font-display font-semibold mb-4 drop-shadow-lg">Andrew &amp; Miranda</h1>
-        <p class="text-xl sm:text-2xl text-white/95 mb-4 drop-shadow-lg">Saturday, September 5, 2026 &middot; Marysville, Ohio</p>
-        <p class="text-lg text-white/90 max-w-xl mx-auto mb-8 drop-shadow-lg">We can't wait to celebrate with you. Please join us for a weekend of love, laughter, and great wine.</p>
-        <div class="flex flex-col sm:flex-row justify-center gap-3">
+      <!-- Wider bg layer on small screens shifts the crop so the left third (subject) sits nearer the middle -->
+      <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute top-0 bottom-0 left-0 w-full bg-cover bg-center bg-no-repeat placeholder-img max-md:left-[-5%] max-md:w-[148%]" data-photo="hero"></div>
+      </div>
+      <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 via-35% to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-b from-charcoal/25 from-0% via-charcoal/45 via-45% to-charcoal/70 to-100%"></div>
+      <div class="absolute inset-x-0 bottom-0 h-[min(58vh,85%)] bg-gradient-to-t from-black/55 via-black/20 to-transparent pointer-events-none" aria-hidden="true"></div>
+      <div class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center text-white hero-copy">
+        <p class="uppercase tracking-[0.25em] text-xs text-blush mb-4">We're getting married</p>
+        <h1 class="text-5xl sm:text-6xl md:text-7xl font-display font-semibold mb-4">Andrew &amp; Miranda</h1>
+        <p class="text-xl sm:text-2xl text-white/95 mb-4">Saturday, September 5, 2026 &middot; Marysville, Ohio</p>
+        <p class="text-lg text-white/90 max-w-xl mx-auto mb-8">We can't wait to celebrate with you. Please join us for a weekend of love, laughter, and great wine.</p>
+        <div class="flex flex-col sm:flex-row justify-center gap-3 [text-shadow:none]">
           <a href="/rsvp" class="inline-flex items-center justify-center px-8 py-4 rounded-full bg-magenta text-white font-semibold shadow-lg hover:bg-magenta/90 transition">RSVP</a>
-          <a href="#how-we-met" class="inline-flex items-center justify-center px-6 py-4 rounded-full border-2 border-white/80 text-white font-semibold hover:bg-white/10 transition">How We Met</a>
+          <a href="#how-we-met" class="inline-flex items-center justify-center px-6 py-4 rounded-full border-2 border-white/80 text-white font-semibold shadow-lg shadow-black/40 hover:bg-white/10 transition">How We Met</a>
         </div>
       </div>
     </section>
@@ -297,6 +333,50 @@
       window.addEventListener('scroll', function() { updateNav(); }, { passive: true });
       window.addEventListener('resize', updateNav);
       updateNav();
+    })();
+  </script>
+
+  <script>
+    (function() {
+      var drawer = document.getElementById('mobile-nav-drawer');
+      var btn = document.getElementById('nav-menu-btn');
+      if (!drawer || !btn) return;
+      var openPath = btn.querySelector('.nav-icon-open');
+      var closePath = btn.querySelector('.nav-icon-close');
+      function setOpen(open) {
+        if (open) {
+          drawer.classList.remove('hidden');
+          drawer.setAttribute('aria-hidden', 'false');
+          btn.setAttribute('aria-expanded', 'true');
+          btn.setAttribute('aria-label', 'Close menu');
+          document.body.style.overflow = 'hidden';
+          if (openPath) openPath.classList.add('hidden');
+          if (closePath) closePath.classList.remove('hidden');
+        } else {
+          drawer.classList.add('hidden');
+          drawer.setAttribute('aria-hidden', 'true');
+          btn.setAttribute('aria-expanded', 'false');
+          btn.setAttribute('aria-label', 'Open menu');
+          document.body.style.overflow = '';
+          if (openPath) openPath.classList.remove('hidden');
+          if (closePath) closePath.classList.add('hidden');
+        }
+      }
+      btn.addEventListener('click', function() {
+        setOpen(drawer.classList.contains('hidden'));
+      });
+      drawer.querySelectorAll('[data-close-mobile-nav]').forEach(function(el) {
+        el.addEventListener('click', function() { setOpen(false); });
+      });
+      drawer.querySelectorAll('a.mobile-nav-link').forEach(function(a) {
+        a.addEventListener('click', function() { setOpen(false); });
+      });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !drawer.classList.contains('hidden')) setOpen(false);
+      });
+      window.addEventListener('resize', function() {
+        if (window.matchMedia('(min-width: 768px)').matches) setOpen(false);
+      });
     })();
   </script>
 </body>
