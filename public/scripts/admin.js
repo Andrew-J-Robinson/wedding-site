@@ -468,6 +468,12 @@
       slots: [{ key: 'hero', label: 'Hero Photo' }],
     },
     {
+      group: 'How We Met',
+      description: 'Photo alongside the "How We Met" story.',
+      layout: 'hero',
+      slots: [{ key: 'how-we-met', label: 'How We Met Photo' }],
+    },
+    {
       group: 'Engagement Photos',
       description: '6 photos displayed in the engagement grid.',
       layout: 'grid',
@@ -542,20 +548,23 @@
         </div>`;
     }
 
+    const memberName = slot._memberName || slot.label;
+    const memberRole = slot._memberRole || slot.sub || '';
     return `
-      <div class="p-3 bg-subtle rounded-xl border border-blush/40 flex gap-3 items-center">
+      <div class="p-3 bg-subtle rounded-xl border border-blush/40 flex gap-3 items-start">
         <div class="w-16 h-16 rounded-lg overflow-hidden placeholder-img shrink-0">${preview}</div>
-        <div class="flex-1 min-w-0">
-          <p class="text-sm font-semibold text-charcoal">${escapeHtml(slot.label)}</p>
-          ${slot.sub ? `<p class="text-xs text-charcoal/70">${escapeHtml(slot.sub)}</p>` : ''}
-          <div class="flex gap-2 mt-1.5 flex-wrap">
+        <div class="flex-1 min-w-0 space-y-1.5">
+          <input type="text" data-member-name="${slot.key}" value="${escapeHtml(memberName)}" placeholder="Name" class="w-full px-2 py-1 rounded-lg border border-blush/60 text-sm font-semibold text-charcoal" />
+          <input type="text" data-member-role="${slot.key}" value="${escapeHtml(memberRole)}" placeholder="Role (e.g. Bridesmaid)" class="w-full px-2 py-1 rounded-lg border border-blush/60 text-xs text-charcoal/70" />
+          <div class="flex gap-2 flex-wrap">
             <label class="px-2 py-1 rounded-lg bg-magenta text-white text-xs font-semibold cursor-pointer hover:bg-magenta/90 transition">
               <span>Upload</span>
               <input type="file" accept="image/*" data-slot-upload="${slot.key}" class="hidden" />
             </label>
             <button type="button" data-slot-remove="${slot.key}" class="px-2 py-1 rounded-lg border border-blush/60 text-xs hover:border-magenta/40 transition">Remove</button>
+            <button type="button" data-member-save="${slot.key}" class="px-2 py-1 rounded-lg border border-magenta text-magenta text-xs font-semibold hover:bg-magenta/10 transition">Save name</button>
           </div>
-          <p data-slot-status="${slot.key}" class="text-xs text-charcoal/70 mt-1 min-h-[1em]"></p>
+          <p data-slot-status="${slot.key}" class="text-xs text-charcoal/70 min-h-[1em]"></p>
         </div>
       </div>`;
   };
@@ -567,9 +576,16 @@
       if (!res.ok) throw new Error();
       const settings = await res.json();
       const photos = settings.photos || {};
+      const partyMembers = settings.partyMembers || {};
 
       photosPanel.innerHTML = PHOTO_GROUPS.map(({ group, description, layout, slots }) => {
-        const slotsHtml = slots.map((slot) => renderSlotHtml(slot, photos[slot.key], layout)).join('');
+        const enrichedSlots = layout === 'party'
+          ? slots.map((slot) => {
+              const m = partyMembers[slot.key] || {};
+              return { ...slot, _memberName: m.name || slot.label, _memberRole: m.role || slot.sub || '' };
+            })
+          : slots;
+        const slotsHtml = enrichedSlots.map((slot) => renderSlotHtml(slot, photos[slot.key], layout)).join('');
         const inner = layout === 'grid'
           ? `<div class="grid grid-cols-2 sm:grid-cols-3 gap-4">${slotsHtml}</div>`
           : `<div class="space-y-3">${slotsHtml}</div>`;
@@ -619,22 +635,51 @@
   });
 
   photosPanel?.addEventListener('click', async (e) => {
-    const btn = e.target.closest('[data-slot-remove]');
-    if (!btn) return;
-    const slot = btn.getAttribute('data-slot-remove');
-    const statusEl = photosPanel.querySelector(`[data-slot-status="${slot}"]`);
-    if (statusEl) statusEl.textContent = 'Removing...';
-    try {
-      const res = await api('/api/settings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photoDelete: { slot } }),
-      });
-      if (!res.ok) throw new Error();
-      if (statusEl) statusEl.textContent = 'Removed.';
-      loadPhotos();
-    } catch (_) {
-      if (statusEl) statusEl.textContent = 'Failed to remove.';
+    const removeBtn = e.target.closest('[data-slot-remove]');
+    if (removeBtn) {
+      const slot = removeBtn.getAttribute('data-slot-remove');
+      const statusEl = photosPanel.querySelector(`[data-slot-status="${slot}"]`);
+      if (statusEl) statusEl.textContent = 'Removing...';
+      try {
+        const res = await api('/api/settings', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ photoDelete: { slot } }),
+        });
+        if (!res.ok) throw new Error();
+        if (statusEl) statusEl.textContent = 'Removed.';
+        loadPhotos();
+      } catch (_) {
+        if (statusEl) statusEl.textContent = 'Failed to remove.';
+      }
+      return;
+    }
+
+    const saveBtn = e.target.closest('[data-member-save]');
+    if (saveBtn) {
+      const slot = saveBtn.getAttribute('data-member-save');
+      const nameInput = photosPanel.querySelector(`[data-member-name="${slot}"]`);
+      const roleInput = photosPanel.querySelector(`[data-member-role="${slot}"]`);
+      const statusEl = photosPanel.querySelector(`[data-slot-status="${slot}"]`);
+      const name = nameInput?.value?.trim() || '';
+      const role = roleInput?.value?.trim() || '';
+      if (!name) { if (statusEl) statusEl.textContent = 'Name is required.'; return; }
+      if (statusEl) statusEl.textContent = 'Saving...';
+      try {
+        const settingsRes = await api('/api/settings');
+        if (!settingsRes.ok) throw new Error();
+        const current = await settingsRes.json();
+        const partyMembers = { ...(current.partyMembers || {}), [slot]: { name, role } };
+        const res = await api('/api/settings', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ partyMembers }),
+        });
+        if (!res.ok) throw new Error();
+        if (statusEl) statusEl.textContent = 'Saved!';
+      } catch (_) {
+        if (statusEl) statusEl.textContent = 'Failed to save.';
+      }
     }
   });
 

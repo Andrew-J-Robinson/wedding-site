@@ -23,7 +23,7 @@ const vendorsPath = path.join(DATA_DIR, 'vendors.json');
 const sessionTokens = new Set();
 
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '5mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 const ensureDataDir = async () => {
@@ -81,7 +81,54 @@ app.get('/api/settings/rsvp', async (_req, res) => {
 
 app.patch('/api/settings', requireAuth, async (req, res) => {
   const current = await getSettings();
-  const next = { ...current, ...req.body };
+  const body = req.body || {};
+
+  if (body.photoUpload) {
+    const { slot, data, contentType } = body.photoUpload;
+    if (!slot || !data || !contentType) {
+      return res.status(400).json({ error: 'slot, data, and contentType are required' });
+    }
+    const ext = (contentType.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+    const uploadsDir = path.join(__dirname, 'public', 'uploads');
+    await fs.mkdir(uploadsDir, { recursive: true });
+
+    // Remove any previous file for this slot (may have a different extension)
+    try {
+      const files = await fs.readdir(uploadsDir);
+      for (const f of files) {
+        if (f.startsWith(slot + '.')) await fs.unlink(path.join(uploadsDir, f));
+      }
+    } catch (_) {}
+
+    const filename = `${slot}.${ext}`;
+    await fs.writeFile(path.join(uploadsDir, filename), Buffer.from(data, 'base64'));
+    const url = `/uploads/${filename}?t=${Date.now()}`;
+
+    const next = { ...current, photos: { ...(current.photos || {}), [slot]: url } };
+    await writeJson(settingsPath, next);
+    return res.json({ url });
+  }
+
+  if (body.photoDelete) {
+    const { slot } = body.photoDelete;
+    if (!slot) return res.status(400).json({ error: 'slot is required' });
+
+    const uploadsDir = path.join(__dirname, 'public', 'uploads');
+    try {
+      const files = await fs.readdir(uploadsDir);
+      for (const f of files) {
+        if (f.startsWith(slot + '.')) await fs.unlink(path.join(uploadsDir, f));
+      }
+    } catch (_) {}
+
+    const photos = { ...(current.photos || {}) };
+    delete photos[slot];
+    const next = { ...current, photos };
+    await writeJson(settingsPath, next);
+    return res.json({ ok: true });
+  }
+
+  const next = { ...current, ...body };
   await writeJson(settingsPath, next);
   res.json(next);
 });
