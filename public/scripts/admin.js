@@ -87,6 +87,8 @@
       loadRsvpControls();
     } else if (current === 'site-content') {
       loadSiteContent();
+    } else if (current === 'registry') {
+      loadRegistry();
     } else if (current === 'photos') {
       loadPhotos();
     }
@@ -243,6 +245,7 @@
 
   // ----- Site copy (home page) -----
   const siteContentPanel = document.getElementById('panel-site-content');
+  const registryPanel = document.getElementById('panel-registry');
 
   function splitParagraphs(text) {
     return String(text || '')
@@ -318,6 +321,39 @@
     wrap.querySelector('[data-sc-travel-heading]').value = block.heading || '';
     wrap.querySelector('[data-sc-travel-paras]').value = joinParagraphs(block.paragraphs || []);
     container.appendChild(wrap);
+  }
+
+  function addRegistryLinkRow(container, item = {}) {
+    const wrap = document.createElement('div');
+    wrap.setAttribute('data-sc-registry-link-row', '');
+    wrap.className = 'flex flex-col sm:flex-row gap-2 p-3 bg-subtle rounded-xl border border-blush/40 sm:items-end';
+    wrap.innerHTML = `
+      <label class="flex-1 min-w-0"><span class="text-xs text-charcoal/70">Button label</span>
+        <input type="text" data-sc-reg-label class="w-full px-2 py-2 rounded-lg border border-blush/60 text-sm" placeholder="e.g. Zola" />
+      </label>
+      <label class="flex-[2] min-w-0"><span class="text-xs text-charcoal/70">URL</span>
+        <input type="url" data-sc-reg-url class="w-full px-2 py-2 rounded-lg border border-blush/60 text-sm" placeholder="https://…" />
+      </label>
+      <button type="button" data-sc-registry-remove class="self-start sm:self-center px-2 py-1 text-xs text-magenta border border-blush/60 rounded-lg shrink-0">Remove</button>
+    `;
+    wrap.querySelector('[data-sc-reg-label]').value = item.label || '';
+    wrap.querySelector('[data-sc-reg-url]').value = item.url || '';
+    container.appendChild(wrap);
+  }
+
+  function readRegistryFromForm() {
+    const links = [...document.querySelectorAll('[data-sc-registry-link-row]')]
+      .map((row) => ({
+        label: row.querySelector('[data-sc-reg-label]')?.value?.trim() || '',
+        url: row.querySelector('[data-sc-reg-url]')?.value?.trim() || '',
+      }))
+      .filter((it) => it.label || it.url);
+    return {
+      eyebrow: document.getElementById('sc-registry-eyebrow')?.value?.trim() || '',
+      title: document.getElementById('sc-registry-title')?.value?.trim() || '',
+      intro: document.getElementById('sc-registry-intro')?.value?.trim() || '',
+      links,
+    };
   }
 
   function readSiteContentFromForm() {
@@ -438,6 +474,30 @@
     }
   }
 
+  async function loadRegistry() {
+    if (!token) return;
+    const statusEl = document.getElementById('registry-status');
+    if (statusEl) statusEl.textContent = 'Loading...';
+    try {
+      const res = await api('/api/settings');
+      if (!res.ok) throw new Error();
+      const settings = await res.json();
+      const c = typeof mergeSiteContent === 'function' ? mergeSiteContent(settings.siteContent) : {};
+
+      document.getElementById('sc-registry-eyebrow').value = c.registry.eyebrow || '';
+      document.getElementById('sc-registry-title').value = c.registry.title || '';
+      document.getElementById('sc-registry-intro').value = c.registry.intro || '';
+      const regRows = document.getElementById('sc-registry-link-rows');
+      regRows.innerHTML = '';
+      (c.registry.links || []).forEach((item) => addRegistryLinkRow(regRows, item));
+      if (!(c.registry.links || []).length) addRegistryLinkRow(regRows, {});
+
+      if (statusEl) statusEl.textContent = '';
+    } catch (_) {
+      if (statusEl) statusEl.textContent = 'Could not load registry.';
+    }
+  }
+
   siteContentPanel?.addEventListener('click', (e) => {
     if (e.target.closest('[data-sc-schedule-remove]')) {
       e.target.closest('[data-sc-schedule-row]')?.remove();
@@ -449,6 +509,12 @@
     }
     if (e.target.closest('[data-sc-travel-remove]')) {
       e.target.closest('[data-sc-travel-block]')?.remove();
+    }
+  });
+
+  registryPanel?.addEventListener('click', (e) => {
+    if (e.target.closest('[data-sc-registry-remove]')) {
+      e.target.closest('[data-sc-registry-link-row]')?.remove();
     }
   });
 
@@ -464,13 +530,42 @@
   document.getElementById('sc-travel-col-1-add')?.addEventListener('click', () => {
     addTravelBlock(document.getElementById('sc-travel-col-1-blocks'), {});
   });
+  document.getElementById('sc-registry-link-add')?.addEventListener('click', () => {
+    addRegistryLinkRow(document.getElementById('sc-registry-link-rows'), {});
+  });
 
   document.getElementById('sc-save')?.addEventListener('click', async () => {
     const statusEl = document.getElementById('sc-status');
     if (!token) return;
     if (statusEl) statusEl.textContent = 'Saving...';
     try {
-      const siteContent = readSiteContentFromForm();
+      const getRes = await api('/api/settings');
+      if (!getRes.ok) throw new Error();
+      const settings = await getRes.json();
+      const prev = settings.siteContent && typeof settings.siteContent === 'object' ? settings.siteContent : {};
+      const siteContent = { ...prev, ...readSiteContentFromForm() };
+      const res = await api('/api/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ siteContent }),
+      });
+      if (!res.ok) throw new Error();
+      if (statusEl) statusEl.textContent = 'Saved.';
+    } catch (_) {
+      if (statusEl) statusEl.textContent = 'Save failed.';
+    }
+  });
+
+  document.getElementById('registry-save')?.addEventListener('click', async () => {
+    const statusEl = document.getElementById('registry-status');
+    if (!token) return;
+    if (statusEl) statusEl.textContent = 'Saving...';
+    try {
+      const getRes = await api('/api/settings');
+      if (!getRes.ok) throw new Error();
+      const settings = await getRes.json();
+      const prev = settings.siteContent && typeof settings.siteContent === 'object' ? settings.siteContent : {};
+      const siteContent = { ...prev, registry: readRegistryFromForm() };
       const res = await api('/api/settings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },

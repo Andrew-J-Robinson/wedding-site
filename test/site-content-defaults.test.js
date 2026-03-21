@@ -71,6 +71,14 @@ test('mergeSiteContent merges qa items including open flag', () => {
   assert.deepEqual(m.qa.items, items);
 });
 
+test('mergeSiteContent replaces registry.links when provided', () => {
+  const { mergeSiteContent } = loadSiteContentDefaults();
+  const links = [{ label: 'Zola', url: 'https://example.com/zola' }];
+  const m = mergeSiteContent({ registry: { links } });
+  assert.deepEqual(m.registry.links, links);
+  assert.equal(m.registry.title, 'Your presence is the best gift');
+});
+
 test('DEFAULT_SITE_CONTENT has expected top-level sections', () => {
   const { DEFAULT_SITE_CONTENT } = loadSiteContentDefaults();
   assert.ok(DEFAULT_SITE_CONTENT.hero);
@@ -78,6 +86,8 @@ test('DEFAULT_SITE_CONTENT has expected top-level sections', () => {
   assert.ok(DEFAULT_SITE_CONTENT.schedule);
   assert.ok(DEFAULT_SITE_CONTENT.travel);
   assert.ok(DEFAULT_SITE_CONTENT.qa);
+  assert.ok(DEFAULT_SITE_CONTENT.registry);
+  assert.ok(Array.isArray(DEFAULT_SITE_CONTENT.registry.links));
   assert.ok(DEFAULT_SITE_CONTENT.footnote);
   assert.ok(Array.isArray(DEFAULT_SITE_CONTENT.travel.columns));
   assert.equal(DEFAULT_SITE_CONTENT.travel.columns.length, 2);

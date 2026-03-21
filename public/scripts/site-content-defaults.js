@@ -108,6 +108,12 @@
           },
         ],
       },
+      registry: {
+        eyebrow: 'Registry',
+        title: 'Your presence is the best gift',
+        intro: "If you'd like to view our registries, please explore the links below.",
+        links: [],
+      },
       footnote: {
         text: "We're so excited to celebrate with you in Location.",
       },

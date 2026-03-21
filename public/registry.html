@@ -24,19 +24,88 @@
 
   <main class="max-w-4xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
     <div class="text-center space-y-4">
-      <p class="uppercase tracking-[0.25em] text-xs text-lavender">Registry</p>
-      <h1 class="text-3xl sm:text-4xl font-display text-charcoal">Your presence is the best gift</h1>
-      <p class="text-charcoal/90">If you'd like to view our registries, please explore the links below.</p>
-      <div class="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 pt-4">
-        <a class="px-6 py-3 rounded-full bg-surface border border-blush/60 shadow-sm hover:border-magenta/40 hover:bg-surface-hover transition" href="#">Registry Placeholder 1</a>
-        <a class="px-6 py-3 rounded-full bg-surface border border-blush/60 shadow-sm hover:border-magenta/40 hover:bg-surface-hover transition" href="#">Registry Placeholder 2</a>
-        <a class="px-6 py-3 rounded-full bg-surface border border-blush/60 shadow-sm hover:border-magenta/40 hover:bg-surface-hover transition" href="#">Registry Placeholder 3</a>
-      </div>
+      <p id="registry-eyebrow" class="uppercase tracking-[0.25em] text-xs text-lavender">Registry</p>
+      <h1 id="registry-title" class="text-3xl sm:text-4xl font-display text-charcoal">Your presence is the best gift</h1>
+      <p id="registry-intro" class="text-charcoal/90">If you'd like to view our registries, please explore the links below.</p>
+      <div id="registry-links" class="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4 pt-4"></div>
     </div>
   </main>
 
   <footer class="border-t border-blush/60 py-6 text-center text-sm text-charcoal/70 bg-wedding-bg">
     <p>We're so excited to celebrate with you.</p>
   </footer>
+
+  <script src="/scripts/site-content-defaults.js"></script>
+  <script>
+    (function () {
+      function esc(s) {
+        if (s == null) return '';
+        var d = document.createElement('div');
+        d.textContent = String(s);
+        return d.innerHTML;
+      }
+
+      function normalizeHref(url) {
+        var u = String(url || '').trim();
+        if (!u) return '';
+        if (/^https?:\/\//i.test(u) || u.startsWith('mailto:') || u.startsWith('/') || u === '#') return u;
+        return 'https://' + u;
+      }
+
+      function renderRegistry(reg) {
+        var eyebrow = document.getElementById('registry-eyebrow');
+        var titleEl = document.getElementById('registry-title');
+        var introEl = document.getElementById('registry-intro');
+        var linksEl = document.getElementById('registry-links');
+        if (eyebrow) eyebrow.textContent = reg.eyebrow || '';
+        if (titleEl) titleEl.textContent = reg.title || '';
+        if (introEl) introEl.textContent = reg.intro || '';
+        if (!linksEl) return;
+        var links = (reg.links || []).filter(function (L) {
+          return String(L && L.label || '').trim() && String(L && L.url || '').trim();
+        });
+        if (!links.length) {
+          linksEl.innerHTML = '';
+          return;
+        }
+        var btnClass =
+          'px-6 py-3 rounded-full bg-surface border border-blush/60 shadow-sm hover:border-magenta/40 hover:bg-surface-hover transition inline-block text-center';
+        linksEl.innerHTML = links
+          .map(function (L) {
+            var href = normalizeHref(L.url);
+            var external = /^https?:\/\//i.test(href);
+            var rel = external ? ' rel="noopener noreferrer"' : '';
+            var target = external ? ' target="_blank"' : '';
+            return (
+              '<a class="' +
+              btnClass +
+              '" href="' +
+              esc(href) +
+              '"' +
+              rel +
+              target +
+              '>' +
+              esc(L.label) +
+              '</a>'
+            );
+          })
+          .join('');
+      }
+
+      fetch('/api/settings')
+        .then(function (res) {
+          return res.ok ? res.json() : {};
+        })
+        .then(function (data) {
+          var content =
+            typeof mergeSiteContent === 'function' ? mergeSiteContent(data.siteContent) : {};
+          renderRegistry(content.registry || {});
+        })
+        .catch(function () {
+          var content = typeof mergeSiteContent === 'function' ? mergeSiteContent({}) : {};
+          renderRegistry(content.registry || {});
+        });
+    })();
+  </script>
 </body>
 </html>
