@@ -92,7 +92,8 @@
     <section id="home" class="relative min-h-screen -mt-16 flex items-end justify-center pb-[15vh]">
       <!-- Wider bg layer on small screens shifts the crop so the left third (subject) sits nearer the middle -->
       <div class="absolute inset-0 overflow-hidden">
-        <div class="absolute top-0 bottom-0 left-0 w-full bg-cover bg-center bg-no-repeat placeholder-img max-md:left-[-1%] max-md:w-[148%]" data-photo="hero"></div>
+        <div class="absolute inset-0 placeholder-img max-md:left-[-1%] max-md:w-[148%]" aria-hidden="true"></div>
+        <div class="absolute top-0 bottom-0 left-0 w-full bg-cover bg-center bg-no-repeat opacity-0 transition-opacity duration-700 ease-out max-md:left-[-1%] max-md:w-[148%] pointer-events-none" data-photo="hero" id="site-hero-photo"></div>
       </div>
       <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 via-35% to-transparent"></div>
       <div class="absolute inset-0 bg-gradient-to-b from-charcoal/25 from-0% via-charcoal/45 via-45% to-charcoal/70 to-100%"></div>
@@ -110,7 +111,7 @@
             <div class="h-14 bg-white/15 rounded-full max-w-[200px] mx-auto w-full sm:mx-0"></div>
           </div>
         </div>
-        <div id="site-hero-reveal" class="relative opacity-0 transition-opacity duration-300">
+        <div id="site-hero-reveal" class="relative opacity-0 transition-opacity duration-700 ease-out">
           <p id="site-hero-kicker" class="uppercase tracking-[0.25em] text-xs text-blush mb-4"></p>
           <h1 id="site-hero-names" class="text-5xl sm:text-6xl md:text-7xl font-display font-semibold mb-4"></h1>
           <p id="site-hero-date-line" class="text-xl sm:text-2xl text-white/95 mb-4"></p>
@@ -392,7 +393,42 @@
         var sk = document.getElementById('site-hero-skeleton');
         var rev = document.getElementById('site-hero-reveal');
         if (sk) sk.classList.add('hidden');
-        if (rev) rev.classList.remove('opacity-0');
+        function showText() {
+          if (!rev) return;
+          requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+              rev.classList.remove('opacity-0');
+            });
+          });
+        }
+        showText();
+      }
+
+      /** Apply hero background and invoke cb after decode (image-first). No url → cb immediately. */
+      function whenHeroBackgroundReady(url, el, cb) {
+        if (!url || !el) {
+          cb();
+          return;
+        }
+        var img = new Image();
+        var settled = false;
+        function finish(applyBg) {
+          if (settled) return;
+          settled = true;
+          if (applyBg) {
+            el.style.backgroundImage = "url('" + url + "')";
+            requestAnimationFrame(function() {
+              requestAnimationFrame(function() {
+                el.classList.remove('opacity-0');
+              });
+            });
+          }
+          cb();
+        }
+        img.onload = function() { finish(true); };
+        img.onerror = function() { finish(false); };
+        img.src = url;
+        setTimeout(function() { finish(true); }, 12000);
       }
 
       function renderParty(party, photos) {
@@ -431,7 +467,11 @@
         var photos = data.photos || {};
         var party = data.party || [];
 
+        var heroEl = document.querySelector('[data-photo="hero"]');
+        var heroUrl = photos.hero;
+
         document.querySelectorAll('[data-photo]').forEach(function(el) {
+          if (el.getAttribute('data-photo') === 'hero') return;
           var url = photos[el.getAttribute('data-photo')];
           if (!url) return;
           if (el.tagName === 'IMG') {
@@ -443,7 +483,7 @@
         });
 
         renderParty(party, photos);
-        revealHeroContent();
+        whenHeroBackgroundReady(heroUrl, heroEl, revealHeroContent);
       } catch (_) {
         var fallback = typeof mergeSiteContent === 'function' ? mergeSiteContent({}) : {};
         renderSiteContent(fallback);
