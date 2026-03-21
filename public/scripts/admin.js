@@ -268,7 +268,7 @@
           <input type="text" data-sc-sch-title class="w-full px-2 py-2 rounded-lg border border-blush/60 text-sm" />
         </label>
       </div>
-      <label class="block"><span class="text-xs text-charcoal/70">Detail</span>
+      <label class="block"><span class="text-xs text-charcoal/70">Detail (<code>[text](url)</code> for links)</span>
         <input type="text" data-sc-sch-detail class="w-full px-2 py-2 rounded-lg border border-blush/60 text-sm" />
       </label>
       <button type="button" data-sc-schedule-remove class="self-start px-2 py-1 text-xs text-magenta border border-blush/60 rounded-lg">Remove</button>
@@ -287,7 +287,7 @@
       <label class="block"><span class="text-xs text-charcoal/70">Question</span>
         <input type="text" data-sc-qa-q class="w-full px-2 py-2 rounded-lg border border-blush/60 text-sm" />
       </label>
-      <label class="block"><span class="text-xs text-charcoal/70">Answer</span>
+      <label class="block"><span class="text-xs text-charcoal/70">Answer (<code>[text](url)</code> for links)</span>
         <textarea data-sc-qa-a rows="3" class="w-full px-2 py-2 rounded-lg border border-blush/60 text-sm"></textarea>
       </label>
       <label class="inline-flex items-center gap-2 text-sm">
@@ -310,7 +310,7 @@
       <label class="block"><span class="text-xs text-charcoal/70">Heading</span>
         <input type="text" data-sc-travel-heading class="w-full px-2 py-2 rounded-lg border border-blush/60 text-sm" />
       </label>
-      <label class="block"><span class="text-xs text-charcoal/70">Paragraphs (blank line between)</span>
+      <label class="block"><span class="text-xs text-charcoal/70">Paragraphs (blank line between, <code>[text](url)</code> for links)</span>
         <textarea data-sc-travel-paras rows="4" class="w-full px-2 py-2 rounded-lg border border-blush/60 text-sm font-mono"></textarea>
       </label>
       <button type="button" data-sc-travel-remove class="px-2 py-1 text-xs text-magenta border border-blush/60 rounded-lg">Remove block</button>
