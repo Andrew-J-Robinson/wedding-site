@@ -8,9 +8,11 @@ module.exports = async function handler(req, res) {
     const settings = row?.data || {};
 
     if (!(await verifyAuth(req))) {
+      res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
       return res.json(publicSettingsPayload(settings));
     }
 
+    res.setHeader('Cache-Control', 'private, no-cache');
     return res.json(settings);
   }
 
