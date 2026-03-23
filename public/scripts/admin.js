@@ -727,6 +727,12 @@
       slots: [{ key: 'how-we-met', label: 'How We Met Photo' }],
     },
     {
+      group: 'Day of timeline',
+      description: 'Photo alongside the schedule / day-of timeline section.',
+      layout: 'hero',
+      slots: [{ key: 'day-of-timeline', label: 'Timeline photo' }],
+    },
+    {
       group: 'Engagement Photos',
       description: '6 photos displayed in the engagement grid.',
       layout: 'grid',

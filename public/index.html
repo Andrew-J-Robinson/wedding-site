@@ -201,24 +201,29 @@
 
     <!-- Schedule -->
     <section id="schedule" class="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
-      <p id="site-schedule-eyebrow" class="uppercase tracking-[0.25em] text-xs text-lavender"></p>
-      <h2 id="site-schedule-title" class="text-3xl sm:text-4xl font-display text-charcoal mb-10"></h2>
-      <div id="site-schedule-items" class="max-w-2xl space-y-6">
-        <div class="flex gap-6 items-start animate-pulse" aria-hidden="true">
-          <div class="w-24 shrink-0 h-5 bg-blush/50 rounded"></div>
-          <div class="flex-1 space-y-2">
-            <div class="h-5 bg-blush/50 rounded max-w-xs"></div>
-            <div class="h-4 bg-blush/40 rounded max-w-md"></div>
+      <div class="grid md:grid-cols-2 gap-12 items-start">
+        <div>
+          <p id="site-schedule-eyebrow" class="uppercase tracking-[0.25em] text-xs text-lavender"></p>
+          <h2 id="site-schedule-title" class="text-3xl sm:text-4xl font-display text-charcoal mb-10"></h2>
+          <div id="site-schedule-items" class="space-y-6">
+            <div class="flex gap-6 items-start animate-pulse" aria-hidden="true">
+              <div class="w-24 shrink-0 h-5 bg-blush/50 rounded"></div>
+              <div class="flex-1 space-y-2">
+                <div class="h-5 bg-blush/50 rounded max-w-xs"></div>
+                <div class="h-4 bg-blush/40 rounded max-w-md"></div>
+              </div>
+            </div>
+            <div class="flex gap-6 items-start animate-pulse" aria-hidden="true">
+              <div class="w-24 shrink-0 h-5 bg-blush/50 rounded"></div>
+              <div class="flex-1 space-y-2">
+                <div class="h-5 bg-blush/50 rounded max-w-sm"></div>
+                <div class="h-4 bg-blush/40 rounded max-w-lg"></div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="flex gap-6 items-start animate-pulse" aria-hidden="true">
-          <div class="w-24 shrink-0 h-5 bg-blush/50 rounded"></div>
-          <div class="flex-1 space-y-2">
-            <div class="h-5 bg-blush/50 rounded max-w-sm"></div>
-            <div class="h-4 bg-blush/40 rounded max-w-lg"></div>
-          </div>
-        </div>
-      </div> 
+        <img data-photo="day-of-timeline" alt="" class="w-full aspect-[5/4] object-cover rounded-2xl placeholder-img" />
+      </div>
     </section>
 
     <!-- Travel & Stay -->
