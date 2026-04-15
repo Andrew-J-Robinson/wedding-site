@@ -12,7 +12,6 @@ module.exports = async function handler(req, res) {
       guestId: r.guest_id,
       name: r.name,
       rsvp: r.rsvp,
-      headcount: r.headcount,
       allergies: r.allergies,
       note: r.note,
       createdAt: r.created_at,
@@ -26,23 +25,27 @@ module.exports = async function handler(req, res) {
     const settings = settingsRow?.data || {};
     if (settings.rsvpOpenGlobal === false) return res.status(403).json({ error: 'RSVP is currently closed' });
 
-    const { name, guestId, rsvp, allergies = '', note = '', headcount } = req.body || {};
-    if (!name || !rsvp) return res.status(400).json({ error: 'Name and RSVP status are required' });
+    const body = req.body || {};
+    const entries = Array.isArray(body.entries) ? body.entries : [body];
 
-    const record = {
-      id: crypto.randomUUID(),
-      guest_id: guestId || null,
-      name: String(name).trim(),
-      rsvp: rsvp.toLowerCase(),
-      headcount: headcount != null ? Number(headcount) : null,
-      allergies: String(allergies || '').trim(),
-      note: String(note || '').trim(),
-    };
+    const records = [];
+    for (const entry of entries) {
+      const { name, guestId, rsvp, allergies = '', note = '' } = entry;
+      if (!name || !rsvp) return res.status(400).json({ error: 'Each entry requires name and rsvp' });
+      records.push({
+        id: crypto.randomUUID(),
+        guest_id: guestId || null,
+        name: String(name).trim(),
+        rsvp: rsvp.toLowerCase(),
+        allergies: String(allergies || '').trim(),
+        note: String(note || '').trim(),
+      });
+    }
 
-    const { error } = await supabase.from('rsvps').insert(record);
+    const { error } = await supabase.from('rsvps').insert(records);
     if (error) return res.status(500).json({ error: error.message });
 
-    return res.json({ ok: true, id: record.id });
+    return res.json({ ok: true, ids: records.map((r) => r.id) });
   }
 
   return res.status(405).json({ error: 'Method not allowed' });

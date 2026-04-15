@@ -106,6 +106,9 @@
   const importStatus = document.getElementById('guests-import-status');
   const guestsTbody = document.getElementById('guests-tbody');
   const guestsListStatus = document.getElementById('guests-list-status');
+  const selectAllCheckbox = document.getElementById('guests-select-all');
+  const bulkDeleteBtn = document.getElementById('guests-bulk-delete');
+  const selectedIds = new Set();
 
   const setImportStatus = (msg, tone = 'info') => {
     importStatus.textContent = msg;
@@ -120,7 +123,7 @@
   const parseCsv = (text) => {
     const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
     if (!lines.length) return [];
-    let headers = ['name', 'party', 'contact'];
+    let headers = ['name', 'party'];
     const first = lines[0].toLowerCase();
     if (first.includes('name')) {
       headers = lines.shift().split(',').map((h) => h.trim().toLowerCase().replace(/\s+/g, ''));
@@ -131,9 +134,10 @@
       headers.forEach((h, idx) => { entry[h] = cols[idx]; });
       return {
         name: entry.name || '',
-        contact: entry.contact || entry.email || '',
         dietaryRestrictions: entry.dietary || entry.dietaryrestrictions || '',
         notes: entry.notes || '',
+        householdId: entry.householdid || entry.household || '',
+        plusOneAllowed: ['true', '1', 'yes'].includes((entry.plusoneallowed || entry.plusone || '').toLowerCase()),
       };
     }).filter((e) => e.name);
   };
@@ -201,10 +205,24 @@
       const res = await api('/api/guests');
       if (!res.ok) throw new Error('fetch failed');
       guests = await res.json();
+      selectedIds.clear();
       renderGuestsTable();
       setListStatus(`${guests.length} guest(s)`);
     } catch (err) {
       setListStatus('Could not load guests', 'error');
+    }
+  };
+
+  const updateBulkDeleteBtn = () => {
+    if (selectedIds.size > 0) {
+      bulkDeleteBtn.textContent = `Delete selected (${selectedIds.size})`;
+      bulkDeleteBtn.classList.remove('hidden');
+    } else {
+      bulkDeleteBtn.classList.add('hidden');
+    }
+    if (selectAllCheckbox) {
+      selectAllCheckbox.checked = guests.length > 0 && selectedIds.size === guests.length;
+      selectAllCheckbox.indeterminate = selectedIds.size > 0 && selectedIds.size < guests.length;
     }
   };
 
@@ -213,10 +231,11 @@
       .map(
         (g) => `
           <tr class="hover:bg-blush/20">
+            <td class="px-3 py-2"><input type="checkbox" data-guest-select="${g.id}" class="rounded" ${selectedIds.has(g.id) ? 'checked' : ''} /></td>
             <td class="px-3 py-2 font-medium">${escapeHtml(g.name)}</td>
-            <td class="px-3 py-2 text-charcoal/80">${escapeHtml(g.contact || '')}</td>
             <td class="px-3 py-2 text-charcoal/80 max-w-[120px] truncate" title="${escapeHtml(g.dietaryRestrictions || '')}">${escapeHtml(g.dietaryRestrictions || '')}</td>
-            <td class="px-3 py-2 text-charcoal/80 max-w-[100px] truncate" title="${escapeHtml(g.gift || '')}">${escapeHtml(g.gift || '')}</td>
+            <td class="px-3 py-2 text-charcoal/80 max-w-[100px] truncate" title="${escapeHtml(g.householdId || '')}">${escapeHtml(g.householdId || '—')}</td>
+            <td class="px-3 py-2">${g.plusOneAllowed ? '✓' : '—'}</td>
             <td class="px-3 py-2">${g.thankYouSent ? '✓' : '—'}</td>
             <td class="px-3 py-2 text-charcoal/80 max-w-[120px] truncate" title="${escapeHtml(g.notes || '')}">${escapeHtml(g.notes || '')}</td>
             <td class="px-3 py-2">
@@ -227,12 +246,20 @@
         `
       )
       .join('');
+    guestsTbody.querySelectorAll('[data-guest-select]').forEach((cb) => {
+      cb.addEventListener('change', () => {
+        const id = cb.getAttribute('data-guest-select');
+        if (cb.checked) selectedIds.add(id); else selectedIds.delete(id);
+        updateBulkDeleteBtn();
+      });
+    });
     guestsTbody.querySelectorAll('[data-guest-edit]').forEach((btn) => {
       btn.addEventListener('click', () => openGuestModal(btn.getAttribute('data-guest-edit')));
     });
     guestsTbody.querySelectorAll('[data-guest-delete]').forEach((btn) => {
       btn.addEventListener('click', () => deleteGuest(btn.getAttribute('data-guest-delete')));
     });
+    updateBulkDeleteBtn();
   };
 
   const escapeHtml = (s) => {
@@ -587,6 +614,33 @@
     } catch (_) {}
   };
 
+  selectAllCheckbox?.addEventListener('change', () => {
+    if (selectAllCheckbox.checked) {
+      guests.forEach((g) => selectedIds.add(g.id));
+    } else {
+      selectedIds.clear();
+    }
+    renderGuestsTable();
+  });
+
+  bulkDeleteBtn?.addEventListener('click', async () => {
+    if (!selectedIds.size) return;
+    if (!confirm(`Delete ${selectedIds.size} guest(s)?`)) return;
+    setListStatus('Deleting...');
+    try {
+      const res = await api('/api/guests', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: [...selectedIds] }),
+      });
+      if (!res.ok) throw new Error('delete failed');
+      selectedIds.clear();
+      loadGuests();
+    } catch (_) {
+      setListStatus('Could not delete guests', 'error');
+    }
+  });
+
   document.getElementById('guests-refresh-list')?.addEventListener('click', () => { loadGuests(); });
 
   const rsvpRows = document.getElementById('admin-rsvp-rows');
@@ -614,7 +668,6 @@
             <tr>
               <td class="px-3 py-2">${escapeHtml(row.name)}</td>
               <td class="px-3 py-2 capitalize">${escapeHtml(row.rsvp)}</td>
-              <td class="px-3 py-2">${row.headcount != null ? row.headcount : '—'}</td>
               <td class="px-3 py-2 text-slate-600">${escapeHtml(row.allergies || '')}</td>
               <td class="px-3 py-2 text-slate-600">${escapeHtml(row.note || '')}</td>
               <td class="px-3 py-2 text-xs text-slate-500">${new Date(row.createdAt).toLocaleString()}</td>
@@ -643,11 +696,11 @@
     document.getElementById('guest-modal-id').value = guestId || '';
     const g = guestId ? guests.find((x) => x.id === guestId) : null;
     document.getElementById('guest-modal-name').value = g?.name || '';
-    document.getElementById('guest-modal-contact').value = g?.contact || '';
     document.getElementById('guest-modal-dietary').value = g?.dietaryRestrictions || '';
-    document.getElementById('guest-modal-gift').value = g?.gift || '';
     document.getElementById('guest-modal-notes').value = g?.notes || '';
     document.getElementById('guest-modal-thankyou').checked = !!g?.thankYouSent;
+    document.getElementById('guest-modal-household').value = g?.householdId || '';
+    document.getElementById('guest-modal-plusone').checked = !!g?.plusOneAllowed;
 
     guestModal.classList.remove('hidden');
   };
@@ -661,11 +714,11 @@
     if (!name) return;
     const payload = {
       name,
-      contact: document.getElementById('guest-modal-contact').value.trim(),
       dietaryRestrictions: document.getElementById('guest-modal-dietary').value.trim(),
-      gift: document.getElementById('guest-modal-gift').value.trim(),
       notes: document.getElementById('guest-modal-notes').value.trim(),
       thankYouSent: document.getElementById('guest-modal-thankyou').checked,
+      householdId: document.getElementById('guest-modal-household').value.trim() || null,
+      plusOneAllowed: document.getElementById('guest-modal-plusone').checked,
     };
     try {
       if (id) {

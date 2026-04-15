@@ -5,11 +5,11 @@ function toApi(g) {
   return {
     id: g.id,
     name: g.name,
-    contact: g.contact,
     notes: g.notes,
     dietaryRestrictions: g.dietary_restrictions,
-    gift: g.gift,
     thankYouSent: g.thank_you_sent,
+    householdId: g.household_id || null,
+    plusOneAllowed: !!g.plus_one_allowed,
     createdAt: g.created_at,
   };
 }
@@ -22,11 +22,11 @@ module.exports = async function handler(req, res) {
     const b = req.body || {};
     const updates = {};
     if (b.name !== undefined) updates.name = String(b.name).trim();
-    if (b.contact !== undefined) updates.contact = b.contact;
     if (b.notes !== undefined) updates.notes = b.notes;
     if (b.dietaryRestrictions !== undefined) updates.dietary_restrictions = b.dietaryRestrictions;
-    if (b.gift !== undefined) updates.gift = b.gift;
     if (b.thankYouSent !== undefined) updates.thank_you_sent = b.thankYouSent;
+    if (b.householdId !== undefined) updates.household_id = b.householdId || null;
+    if (b.plusOneAllowed !== undefined) updates.plus_one_allowed = !!b.plusOneAllowed;
 
     const { data, error } = await supabase.from('guests').update(updates).eq('id', id).select().single();
     if (error) return res.status(404).json({ error: 'Guest not found' });

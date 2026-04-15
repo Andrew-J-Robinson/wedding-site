@@ -176,7 +176,7 @@ Exact request bodies and responses are defined in each file under `api/`.
 - an **array** of guest objects, or
 - **`{ "guests": [ … ] }`**
 
-Each guest should include at least **`name`**. Optional fields map to the database (e.g. `contact`, `notes`, `dietaryRestrictions` / `allergies`, `gift`, `thankYouSent`). The handler **replaces all guests** in the table with the provided set. Requires an authenticated admin request.
+Each guest should include at least **`name`**. Optional fields map to the database (e.g. `notes`, `dietaryRestrictions` / `allergies`, `thankYouSent`, `householdId`, `plusOneAllowed`). The handler **replaces all guests** in the table with the provided set. Requires an authenticated admin request.
 
 ## Testing
 

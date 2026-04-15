@@ -50,13 +50,13 @@
             <div class="flex items-center justify-between flex-wrap gap-2">
               <h3 class="text-lg font-semibold text-charcoal">Add / Import Guests</h3>
             </div>
-            <p class="text-sm text-charcoal/70">Add one guest or import from CSV/JSON (name, contact, notes, dietaryRestrictions, gift, thankYouSent).</p>
+            <p class="text-sm text-charcoal/70">Add one guest or import from CSV/JSON (name, notes, dietaryRestrictions, thankYouSent, householdId, plusOneAllowed).</p>
             <div class="space-y-3">
               <div class="flex gap-2 flex-wrap">
                 <button id="guests-add-btn" class="px-4 py-2 rounded-xl bg-magenta text-white font-semibold hover:bg-magenta/90 transition">Add guest</button>
                 <input id="guests-file" type="file" accept=".csv,.json" class="block text-sm text-charcoal/70 max-w-[200px]" />
               </div>
-              <textarea id="guests-raw" rows="6" class="w-full px-4 py-3 rounded-xl border border-blush/60 focus:border-magenta focus:ring-2 focus:ring-blush/60 text-sm" placeholder='Or paste JSON array: [{ "name": "Jane", "contact": "jane@example.com" }]'></textarea>
+              <textarea id="guests-raw" rows="6" class="w-full px-4 py-3 rounded-xl border border-blush/60 focus:border-magenta focus:ring-2 focus:ring-blush/60 text-sm" placeholder='Or paste JSON array: [{ "name": "Jane" }]'></textarea>
               <pre id="guests-preview" class="bg-pre-bg text-pre-text text-xs p-4 rounded-xl max-h-40 overflow-auto">[]</pre>
               <button id="guests-save-import" class="px-4 py-2 rounded-xl border border-magenta text-magenta font-semibold hover:bg-magenta/10 transition">Save / Import list</button>
             </div>
@@ -80,7 +80,6 @@
                   <tr>
                     <th class="text-left px-3 py-2">Name</th>
                     <th class="text-left px-3 py-2">RSVP</th>
-                    <th class="text-left px-3 py-2">Headcount</th>
                     <th class="text-left px-3 py-2">Allergies</th>
                     <th class="text-left px-3 py-2">Note</th>
                     <th class="text-left px-3 py-2">Time</th>
@@ -95,16 +94,20 @@
         <section class="bg-surface border border-blush/50 rounded-2xl shadow-sm p-6 space-y-4">
           <div class="flex items-center justify-between flex-wrap gap-2">
             <h3 class="text-lg font-semibold text-charcoal">Guest list</h3>
-            <button id="guests-refresh-list" class="px-3 py-2 rounded-xl border border-blush/60 hover:border-magenta/40 text-sm transition">Refresh</button>
+            <div class="flex gap-2 flex-wrap">
+              <button id="guests-bulk-delete" class="hidden px-3 py-2 rounded-xl bg-magenta text-white text-sm font-semibold hover:bg-magenta/90 transition">Delete selected</button>
+              <button id="guests-refresh-list" class="px-3 py-2 rounded-xl border border-blush/60 hover:border-magenta/40 text-sm transition">Refresh</button>
+            </div>
           </div>
           <div class="overflow-auto border border-blush/50 rounded-xl max-h-96">
             <table class="min-w-full text-sm">
               <thead class="bg-blush/30 text-charcoal sticky top-0">
                 <tr>
+                  <th class="px-3 py-2 w-8"><input type="checkbox" id="guests-select-all" class="rounded" /></th>
                   <th class="text-left px-3 py-2">Name</th>
-                  <th class="text-left px-3 py-2">Contact</th>
                   <th class="text-left px-3 py-2">Dietary</th>
-                  <th class="text-left px-3 py-2">Gift</th>
+                  <th class="text-left px-3 py-2">Household</th>
+                  <th class="text-left px-3 py-2">+1</th>
                   <th class="text-left px-3 py-2">Thank you</th>
                   <th class="text-left px-3 py-2">Notes</th>
                   <th class="text-left px-3 py-2 w-20">Actions</th>
@@ -225,11 +228,11 @@
       <input type="hidden" id="guest-modal-id" />
       <div class="grid gap-3">
         <label class="block"><span class="text-sm font-medium text-charcoal">Name</span><input type="text" id="guest-modal-name" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1" /></label>
-        <label class="block"><span class="text-sm font-medium text-charcoal">Contact</span><input type="text" id="guest-modal-contact" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1" placeholder="Email or phone" /></label>
         <label class="block"><span class="text-sm font-medium text-charcoal">Dietary restrictions</span><input type="text" id="guest-modal-dietary" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1" /></label>
-        <label class="block"><span class="text-sm font-medium text-charcoal">Gift</span><input type="text" id="guest-modal-gift" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1" /></label>
         <label class="flex items-center gap-2"><input type="checkbox" id="guest-modal-thankyou" class="rounded" /><span class="text-sm font-medium text-charcoal">Thank-you sent</span></label>
         <label class="block"><span class="text-sm font-medium text-charcoal">Notes</span><textarea id="guest-modal-notes" rows="2" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1"></textarea></label>
+        <label class="block"><span class="text-sm font-medium text-charcoal">Household ID</span><input type="text" id="guest-modal-household" class="w-full px-4 py-2 rounded-xl border border-blush/60 mt-1" placeholder="Shared ID for grouped invitations" /></label>
+        <label class="flex items-center gap-2"><input type="checkbox" id="guest-modal-plusone" class="rounded" /><span class="text-sm font-medium text-charcoal">Allow +1</span></label>
       </div>
       <div class="flex gap-2 justify-end">
         <button type="button" id="guest-modal-cancel" class="px-4 py-2 rounded-xl border border-blush/60 hover:border-magenta/40">Cancel</button>

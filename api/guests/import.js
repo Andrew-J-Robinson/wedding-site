@@ -15,11 +15,11 @@ module.exports = async function handler(req, res) {
     .map((item) => ({
       id: item.id || crypto.randomUUID(),
       name: String(item.name).trim(),
-      contact: item.contact || '',
       notes: item.notes || '',
       dietary_restrictions: item.dietaryRestrictions || item.allergies || '',
-      gift: item.gift || '',
       thank_you_sent: !!item.thankYouSent,
+      household_id: item.householdId || null,
+      plus_one_allowed: !!item.plusOneAllowed,
     }));
 
   // Replace all guests
