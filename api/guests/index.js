@@ -12,6 +12,7 @@ function toApi(g) {
     thankYouSent: g.thank_you_sent,
     householdId: g.household_id || null,
     plusOneAllowed: !!g.plus_one_allowed,
+    hasKids: !!g.has_kids,
     createdAt: g.created_at,
   };
 }
@@ -22,12 +23,13 @@ module.exports = async function handler(req, res) {
     if (searchName) {
       const { data: guests } = await supabase
         .from('guests')
-        .select('id, name, household_id, plus_one_allowed');
+        .select('id, name, household_id, plus_one_allowed, has_kids');
       const list = (guests || []).map((g) => ({
         id: g.id,
         name: g.name,
         householdId: g.household_id || null,
         plusOneAllowed: !!g.plus_one_allowed,
+        hasKids: !!g.has_kids,
       }));
 
       const fuse = new Fuse(list, { keys: ['name'], threshold: 0.4, includeScore: true });
@@ -64,6 +66,7 @@ module.exports = async function handler(req, res) {
       thank_you_sent: !!b.thankYouSent,
       household_id: b.householdId || null,
       plus_one_allowed: !!b.plusOneAllowed,
+      has_kids: !!b.hasKids,
     };
 
     const { data, error } = await supabase.from('guests').insert(row).select().single();

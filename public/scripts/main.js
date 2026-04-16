@@ -6,8 +6,9 @@
     'Search Guest List',
     'Confirm Guest',
     'RSVP Choice',
-    'Plus One',
+    'Kids',
     'Food Allergies',
+    'Plus One',
     'Optional Note'
   ];
 
@@ -25,6 +26,7 @@
     plusOneAllergies: '',
     allergies: '',
     memberAllergies: {},
+    memberKidsCounts: {},
     note: '',
     submitting: false,
     rsvpOpen: true,
@@ -65,16 +67,14 @@
 
   const isHousehold = () => state.householdMembers.length > 0;
 
+  const anyMemberHasKids = () => getAllMembers().some((m) => m.hasKids);
+
   const visibleSteps = () => {
     return steps.filter((_, idx) => {
-      if (idx === 4) return state.plusOneAllowed;
+      if (idx === 4) return anyMemberHasKids();
+      if (idx === 6) return state.plusOneAllowed;
       return true;
     });
-  };
-
-  const mapStepIndex = (visIdx) => {
-    const vis = visibleSteps();
-    return steps.indexOf(vis[visIdx]);
   };
 
   const visibleStepIndex = () => {
@@ -154,7 +154,7 @@
     renderStepper();
     prevBtn.disabled = state.step === 0 || state.submitting;
 
-    const lastStep = 6;
+    const lastStep = 7;
     const hideNext = state.step === 0 || (state.step === 1 && !state.selectedGuest);
     nextBtn.classList.toggle('invisible', hideNext);
     nextBtn.disabled = state.submitting || hideNext;
@@ -294,29 +294,24 @@
         break;
       }
 
-      case 4:
+      case 4: {
+        const kidsMembers = getAllMembers().filter((m) => m.hasKids);
+        const multi = kidsMembers.length > 1;
         bodyEl.innerHTML = `
           <div class="space-y-4">
-            <p class="text-sm text-charcoal/70">Will you be bringing a guest?</p>
-            <div class="flex gap-3">
-              <button data-plusone="yes" class="px-4 py-3 rounded-xl border ${state.bringingPlusOne ? 'border-magenta bg-blush/40 text-magenta' : 'border-blush/60'} hover:border-magenta/40">Yes</button>
-              <button data-plusone="no" class="px-4 py-3 rounded-xl border ${!state.bringingPlusOne ? 'border-magenta bg-blush/40 text-magenta' : 'border-blush/60'} hover:border-magenta/40">No</button>
-            </div>
-            <div id="plusone-fields" class="${state.bringingPlusOne ? '' : 'hidden'} space-y-3">
-              <label class="block text-sm font-medium text-charcoal">Guest's name</label>
-              <input id="plusone-name" class="w-full px-4 py-3 rounded-xl border border-blush/60 focus:border-magenta focus:ring-2 focus:ring-blush/60" placeholder="Their full name" value="${escapeHtml(state.plusOneName)}" />
-              <label class="block text-sm font-medium text-charcoal">Their dietary needs (optional)</label>
-              <input id="plusone-allergies" class="w-full px-4 py-3 rounded-xl border border-blush/60 focus:border-magenta focus:ring-2 focus:ring-blush/60" placeholder="Any allergies or preferences" value="${escapeHtml(state.plusOneAllergies)}" />
-            </div>
+            <p class="text-sm text-charcoal/70">How many children will be attending?</p>
+            ${kidsMembers.map((m) => `
+              <div class="space-y-1">
+                ${multi ? `<label class="block text-sm font-medium text-charcoal">${escapeHtml(m.name)}</label>` : ''}
+                <select data-kids-id="${m.id}" class="w-full px-4 py-3 rounded-xl border border-blush/60 focus:border-magenta focus:ring-2 focus:ring-blush/60 bg-white">
+                  ${[0, 1, 2, 3, 4, 5].map((n) => `<option value="${n}" ${(state.memberKidsCounts[m.id] ?? 0) === n ? 'selected' : ''}>${n}</option>`).join('')}
+                </select>
+              </div>
+            `).join('')}
           </div>
         `;
-        bodyEl.querySelectorAll('[data-plusone]').forEach((btn) => {
-          btn.addEventListener('click', () => {
-            state.bringingPlusOne = btn.getAttribute('data-plusone') === 'yes';
-            renderStep();
-          });
-        });
         break;
+      }
 
       case 5: {
         const members = getAllMembers();
@@ -344,6 +339,30 @@
       }
 
       case 6:
+        bodyEl.innerHTML = `
+          <div class="space-y-4">
+            <p class="text-sm text-charcoal/70">Will you be bringing a guest?</p>
+            <div class="flex gap-3">
+              <button data-plusone="yes" class="px-4 py-3 rounded-xl border ${state.bringingPlusOne ? 'border-magenta bg-blush/40 text-magenta' : 'border-blush/60'} hover:border-magenta/40">Yes</button>
+              <button data-plusone="no" class="px-4 py-3 rounded-xl border ${!state.bringingPlusOne ? 'border-magenta bg-blush/40 text-magenta' : 'border-blush/60'} hover:border-magenta/40">No</button>
+            </div>
+            <div id="plusone-fields" class="${state.bringingPlusOne ? '' : 'hidden'} space-y-3">
+              <label class="block text-sm font-medium text-charcoal">Guest's name</label>
+              <input id="plusone-name" class="w-full px-4 py-3 rounded-xl border border-blush/60 focus:border-magenta focus:ring-2 focus:ring-blush/60" placeholder="Their full name" value="${escapeHtml(state.plusOneName)}" />
+              <label class="block text-sm font-medium text-charcoal">Their dietary needs (optional)</label>
+              <input id="plusone-allergies" class="w-full px-4 py-3 rounded-xl border border-blush/60 focus:border-magenta focus:ring-2 focus:ring-blush/60" placeholder="Any allergies or preferences" value="${escapeHtml(state.plusOneAllergies)}" />
+            </div>
+          </div>
+        `;
+        bodyEl.querySelectorAll('[data-plusone]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            state.bringingPlusOne = btn.getAttribute('data-plusone') === 'yes';
+            renderStep();
+          });
+        });
+        break;
+
+      case 7:
         bodyEl.innerHTML = `
           <div class="space-y-2">
             <label class="block text-sm font-medium text-charcoal">Note to the couple (optional)</label>
@@ -374,6 +393,12 @@
     } catch (err) {
       setStatus('Could not search right now. Please try again.', 'error');
     }
+  };
+
+  const collectKidsCounts = () => {
+    bodyEl.querySelectorAll('[data-kids-id]').forEach((select) => {
+      state.memberKidsCounts[select.getAttribute('data-kids-id')] = parseInt(select.value, 10) || 0;
+    });
   };
 
   const collectAllergies = () => {
@@ -411,6 +436,19 @@
         note: m.id === state.selectedGuest?.id ? state.note : '',
       }));
 
+      members.forEach((m) => {
+        const count = state.memberKidsCounts[m.id] || 0;
+        for (let i = 1; i <= count; i++) {
+          entries.push({
+            name: `Child ${i} of ${m.name}`,
+            guestId: m.id,
+            rsvp: 'yes',
+            allergies: '',
+            note: '',
+          });
+        }
+      });
+
       if (state.bringingPlusOne && state.plusOneName) {
         entries.push({
           name: state.plusOneName,
@@ -440,13 +478,15 @@
 
   const nextRealStep = (from) => {
     let next = from + 1;
-    if (next === 4 && !state.plusOneAllowed) next = 5;
+    if (next === 4 && !anyMemberHasKids()) next = 5;
+    if (next === 6 && !state.plusOneAllowed) next = 7;
     return next;
   };
 
   const prevRealStep = (from) => {
     let prev = from - 1;
-    if (prev === 4 && !state.plusOneAllowed) prev = 3;
+    if (prev === 6 && !state.plusOneAllowed) prev = 5;
+    if (prev === 4 && !anyMemberHasKids()) prev = 3;
     return prev;
   };
 
@@ -480,24 +520,31 @@
     }
 
     if (state.step === 4) {
-      collectPlusOne();
-      if (state.bringingPlusOne && !state.plusOneName) {
-        setStatus('Please enter your guest\'s name.', 'error');
-        return;
-      }
-      state.step = 5;
+      collectKidsCounts();
+      state.step = nextRealStep(4);
       renderStep();
       return;
     }
 
     if (state.step === 5) {
       collectAllergies();
-      state.step = 6;
+      state.step = nextRealStep(5);
       renderStep();
       return;
     }
 
     if (state.step === 6) {
+      collectPlusOne();
+      if (state.bringingPlusOne && !state.plusOneName) {
+        setStatus('Please enter your guest\'s name.', 'error');
+        return;
+      }
+      state.step = 7;
+      renderStep();
+      return;
+    }
+
+    if (state.step === 7) {
       const textarea = document.getElementById('rsvp-note');
       state.note = textarea ? textarea.value.trim() : '';
       await submitRsvp();

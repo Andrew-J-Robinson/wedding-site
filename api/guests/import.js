@@ -20,6 +20,7 @@ module.exports = async function handler(req, res) {
       thank_you_sent: !!item.thankYouSent,
       household_id: item.householdId || null,
       plus_one_allowed: !!item.plusOneAllowed,
+      has_kids: !!item.hasKids,
     }));
 
   // Replace all guests

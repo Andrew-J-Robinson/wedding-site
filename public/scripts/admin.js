@@ -138,6 +138,7 @@
         notes: entry.notes || '',
         householdId: entry.householdid || entry.household || '',
         plusOneAllowed: ['true', '1', 'yes'].includes((entry.plusoneallowed || entry.plusone || '').toLowerCase()),
+        hasKids: ['true', '1', 'yes'].includes((entry.haskids || entry.kids || '').toLowerCase()),
       };
     }).filter((e) => e.name);
   };
@@ -236,6 +237,7 @@
             <td class="px-3 py-2 text-charcoal/80 max-w-[120px] truncate" title="${escapeHtml(g.dietaryRestrictions || '')}">${escapeHtml(g.dietaryRestrictions || '')}</td>
             <td class="px-3 py-2 text-charcoal/80 max-w-[100px] truncate" title="${escapeHtml(g.householdId || '')}">${escapeHtml(g.householdId || '—')}</td>
             <td class="px-3 py-2">${g.plusOneAllowed ? '✓' : '—'}</td>
+            <td class="px-3 py-2">${g.hasKids ? '✓' : '—'}</td>
             <td class="px-3 py-2">${g.thankYouSent ? '✓' : '—'}</td>
             <td class="px-3 py-2 text-charcoal/80 max-w-[120px] truncate" title="${escapeHtml(g.notes || '')}">${escapeHtml(g.notes || '')}</td>
             <td class="px-3 py-2">
@@ -701,6 +703,7 @@
     document.getElementById('guest-modal-thankyou').checked = !!g?.thankYouSent;
     document.getElementById('guest-modal-household').value = g?.householdId || '';
     document.getElementById('guest-modal-plusone').checked = !!g?.plusOneAllowed;
+    document.getElementById('guest-modal-haskids').checked = !!g?.hasKids;
 
     guestModal.classList.remove('hidden');
   };
@@ -719,6 +722,7 @@
       thankYouSent: document.getElementById('guest-modal-thankyou').checked,
       householdId: document.getElementById('guest-modal-household').value.trim() || null,
       plusOneAllowed: document.getElementById('guest-modal-plusone').checked,
+      hasKids: document.getElementById('guest-modal-haskids').checked,
     };
     try {
       if (id) {
