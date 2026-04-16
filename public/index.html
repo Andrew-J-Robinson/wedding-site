@@ -231,16 +231,16 @@
       <div class="max-w-6xl mx-auto px-4 sm:px-6">
         <p id="site-travel-eyebrow" class="uppercase tracking-[0.25em] text-xs text-lavender"></p>
         <h2 id="site-travel-title" class="text-3xl sm:text-4xl font-display text-charcoal mb-8"></h2>
-        <div class="grid md:grid-cols-2 gap-8">
-          <div id="site-travel-col-0" class="space-y-4">
-            <div class="space-y-3 animate-pulse" aria-hidden="true">
+        <div class="grid md:grid-cols-2 gap-6">
+          <div id="site-travel-col-0" class="space-y-6">
+            <div class="rounded-2xl border border-blush/50 bg-surface shadow-sm p-6 sm:p-7 space-y-3 animate-pulse" aria-hidden="true">
               <div class="h-5 bg-blush/50 rounded w-40"></div>
               <div class="h-4 bg-blush/40 rounded"></div>
               <div class="h-4 bg-blush/40 rounded max-w-[92%]"></div>
             </div>
           </div>
-          <div id="site-travel-col-1" class="space-y-4">
-            <div class="space-y-3 animate-pulse" aria-hidden="true">
+          <div id="site-travel-col-1" class="space-y-6">
+            <div class="rounded-2xl border border-blush/50 bg-surface shadow-sm p-6 sm:p-7 space-y-3 animate-pulse" aria-hidden="true">
               <div class="h-5 bg-blush/50 rounded w-36"></div>
               <div class="h-4 bg-blush/40 rounded"></div>
               <div class="h-4 bg-blush/40 rounded max-w-[88%]"></div>
@@ -297,18 +297,21 @@
 
       function renderTravelColumn(el, blocks) {
         el.textContent = '';
-        (blocks || []).forEach(function (block, bi) {
+        (blocks || []).forEach(function (block) {
+          var card = document.createElement('div');
+          card.className = 'rounded-2xl border border-blush/50 bg-surface shadow-sm p-6 sm:p-7 space-y-3';
           var h3 = document.createElement('h3');
-          h3.className = 'font-semibold text-charcoal text-lg' + (bi > 0 ? ' mt-6' : '');
+          h3.className = 'font-semibold text-charcoal text-lg';
           h3.textContent = block.heading || '';
-          el.appendChild(h3);
+          card.appendChild(h3);
           var paras = block.paragraphs || [];
           paras.forEach(function (para, pi) {
             var p = document.createElement('p');
-            p.className = paras.length > 1 && pi > 0 ? 'text-charcoal/80 text-sm' : 'text-charcoal/90';
+            p.className = 'leading-relaxed ' + (paras.length > 1 && pi > 0 ? 'text-charcoal/80 text-sm' : 'text-charcoal/90');
             renderLinkedText(p, para);
-            el.appendChild(p);
+            card.appendChild(p);
           });
+          el.appendChild(card);
         });
       }
 
