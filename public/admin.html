@@ -14,6 +14,53 @@
     h1, h2, h3, .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
     .placeholder-img { background: repeating-linear-gradient(45deg, var(--color-blush), var(--color-blush) 10px, var(--color-placeholder-stripe) 10px, var(--color-placeholder-stripe) 20px); }
     [data-tab-panel]:not(.active) { display: none; }
+
+    /* Guest list: stacked cards on small screens, table on md+ */
+    @media (max-width: 767px) {
+      table.guests-table, table.guests-table thead, table.guests-table tbody,
+      table.guests-table tr, table.guests-table th, table.guests-table td { display: block; }
+      table.guests-table thead { display: none; }
+      table.guests-table tr {
+        border: 1px solid rgba(247, 219, 216, 0.6);
+        border-radius: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        margin-bottom: 0.5rem;
+        background: var(--color-surface);
+      }
+      table.guests-table td {
+        border: none !important;
+        padding: 0.25rem 0 !important;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        max-width: none !important;
+      }
+      table.guests-table td[data-label]::before {
+        content: attr(data-label);
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--color-charcoal);
+        opacity: 0.55;
+        font-weight: 600;
+        flex-shrink: 0;
+      }
+      table.guests-table td.guests-row-select,
+      table.guests-table td.guests-row-actions { justify-content: flex-end; }
+      table.guests-table td.guests-row-name {
+        font-size: 1rem;
+        font-weight: 600;
+        border-bottom: 1px solid rgba(247, 219, 216, 0.45) !important;
+        padding-bottom: 0.5rem !important;
+        margin-bottom: 0.25rem;
+      }
+      table.guests-table td.guests-row-name::before { display: none; }
+      table.guests-table tr.guests-group-row {
+        background: var(--color-blush);
+        background: rgba(247, 219, 216, 0.35);
+      }
+    }
   </style>
 </head>
 <body class="bg-subtle text-charcoal">
@@ -45,71 +92,110 @@
 
       <!-- Guests -->
       <div id="panel-guests" data-tab-panel class="space-y-6 active">
-        <div class="grid lg:grid-cols-2 gap-6">
-          <section class="bg-surface border border-blush/50 rounded-2xl shadow-sm p-6 space-y-4">
-            <div class="flex items-center justify-between flex-wrap gap-2">
-              <h3 class="text-lg font-semibold text-charcoal">Add / Import Guests</h3>
-            </div>
-            <p class="text-sm text-charcoal/70">Add one guest or import from CSV/JSON (name, notes, dietaryRestrictions, thankYouSent, householdId, plusOneAllowed).</p>
-            <div class="space-y-3">
-              <div class="flex gap-2 flex-wrap">
-                <button id="guests-add-btn" class="px-4 py-2 rounded-xl bg-magenta text-white font-semibold hover:bg-magenta/90 transition">Add guest</button>
-                <input id="guests-file" type="file" accept=".csv,.json" class="block text-sm text-charcoal/70 max-w-[200px]" />
-              </div>
-              <textarea id="guests-raw" rows="6" class="w-full px-4 py-3 rounded-xl border border-blush/60 focus:border-magenta focus:ring-2 focus:ring-blush/60 text-sm" placeholder='Or paste JSON array: [{ "name": "Jane" }]'></textarea>
-              <pre id="guests-preview" class="bg-pre-bg text-pre-text text-xs p-4 rounded-xl max-h-40 overflow-auto">[]</pre>
-              <button id="guests-save-import" class="px-4 py-2 rounded-xl border border-magenta text-magenta font-semibold hover:bg-magenta/10 transition">Save / Import list</button>
-            </div>
-            <p id="guests-import-status" class="text-sm text-charcoal/70"></p>
-          </section>
-          <section class="bg-surface border border-blush/50 rounded-2xl shadow-sm p-6 space-y-4">
-            <div class="flex items-center justify-between flex-wrap gap-2">
-              <h3 class="text-lg font-semibold text-charcoal">RSVP overview</h3>
-              <div class="flex gap-2">
-                <button id="guests-refresh-rsvp" class="px-3 py-2 rounded-xl border border-blush/60 hover:border-magenta/40 text-sm transition">Refresh</button>
-              </div>
-            </div>
-            <div class="grid grid-cols-3 gap-2 text-center text-sm">
-              <div class="p-3 rounded-xl bg-blush/40 text-magenta"><span class="font-semibold" id="count-yes">0</span> Yes</div>
-              <div class="p-3 rounded-xl bg-amber-50 text-amber-700 dark:bg-blush/30 dark:text-charcoal/90"><span class="font-semibold" id="count-maybe">0</span> Maybe</div>
-              <div class="p-3 rounded-xl bg-blush/30 text-charcoal/80"><span class="font-semibold" id="count-no">0</span> No</div>
-            </div>
-            <div class="overflow-auto border border-blush/50 rounded-xl max-h-64">
-              <table class="min-w-full text-sm">
-                <thead class="bg-blush/30 text-charcoal sticky top-0">
-                  <tr>
-                    <th class="text-left px-3 py-2">Name</th>
-                    <th class="text-left px-3 py-2">RSVP</th>
-                    <th class="text-left px-3 py-2">Allergies</th>
-                    <th class="text-left px-3 py-2">Note</th>
-                    <th class="text-left px-3 py-2">Time</th>
-                  </tr>
-                </thead>
-                <tbody id="admin-rsvp-rows" class="divide-y divide-blush/40"></tbody>
-              </table>
-            </div>
-            <p id="admin-rsvp-status" class="text-sm text-charcoal/70"></p>
-          </section>
-        </div>
+        <!-- Stats strip -->
+        <section id="guests-stats" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+          <div class="p-3 rounded-xl bg-surface border border-blush/50 text-center">
+            <div class="text-2xl font-display font-semibold text-charcoal" id="stat-total">0</div>
+            <div class="text-xs uppercase tracking-wider text-charcoal/60 mt-0.5">Guests</div>
+          </div>
+          <div class="p-3 rounded-xl bg-surface border border-blush/50 text-center">
+            <div class="text-2xl font-display font-semibold text-charcoal" id="stat-households">0</div>
+            <div class="text-xs uppercase tracking-wider text-charcoal/60 mt-0.5">Households</div>
+          </div>
+          <div class="p-3 rounded-xl bg-surface border border-blush/50 text-center">
+            <div class="text-2xl font-display font-semibold text-charcoal" id="stat-plusones">0</div>
+            <div class="text-xs uppercase tracking-wider text-charcoal/60 mt-0.5">+1 allowed</div>
+          </div>
+          <div class="p-3 rounded-xl bg-surface border border-blush/50 text-center">
+            <div class="text-2xl font-display font-semibold text-charcoal" id="stat-kids">0</div>
+            <div class="text-xs uppercase tracking-wider text-charcoal/60 mt-0.5">Has kids</div>
+          </div>
+          <div class="p-3 rounded-xl bg-blush/40 text-center">
+            <div class="text-2xl font-display font-semibold text-magenta" id="count-yes">0</div>
+            <div class="text-xs uppercase tracking-wider text-magenta/80 mt-0.5">Yes</div>
+          </div>
+          <div class="p-3 rounded-xl bg-blush/30 text-center">
+            <div class="text-2xl font-display font-semibold text-charcoal" id="count-maybe">0</div>
+            <div class="text-xs uppercase tracking-wider text-charcoal/70 mt-0.5">Maybe</div>
+          </div>
+          <div class="p-3 rounded-xl bg-blush/20 text-center">
+            <div class="text-2xl font-display font-semibold text-charcoal/80" id="count-no">0</div>
+            <div class="text-xs uppercase tracking-wider text-charcoal/60 mt-0.5">No</div>
+          </div>
+          <div class="p-3 rounded-xl bg-surface border border-blush/50 text-center">
+            <div class="text-2xl font-display font-semibold text-charcoal/70" id="stat-pending">0</div>
+            <div class="text-xs uppercase tracking-wider text-charcoal/60 mt-0.5">Pending</div>
+          </div>
+        </section>
+
+        <!-- Guest list -->
         <section class="bg-surface border border-blush/50 rounded-2xl shadow-sm p-6 space-y-4">
           <div class="flex items-center justify-between flex-wrap gap-2">
             <h3 class="text-lg font-semibold text-charcoal">Guest list</h3>
             <div class="flex gap-2 flex-wrap">
-              <button id="guests-bulk-delete" class="hidden px-3 py-2 rounded-xl bg-magenta text-white text-sm font-semibold hover:bg-magenta/90 transition">Delete selected</button>
-              <button id="guests-refresh-list" class="px-3 py-2 rounded-xl border border-blush/60 hover:border-magenta/40 text-sm transition">Refresh</button>
+              <button id="guests-add-btn" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-magenta text-white text-sm font-semibold hover:bg-magenta/90 transition">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                Add guest
+              </button>
+              <button id="guests-import-btn" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-blush/60 text-sm hover:border-magenta/40 transition">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                Import
+              </button>
+              <button id="guests-export-btn" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-blush/60 text-sm hover:border-magenta/40 transition">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                Export CSV
+              </button>
+              <button id="guests-bulk-delete" class="hidden inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-magenta text-white text-sm font-semibold hover:bg-magenta/90 transition">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/></svg>
+                Delete selected
+              </button>
+              <button id="guests-refresh-list" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-blush/60 text-sm hover:border-magenta/40 transition" aria-label="Refresh">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.3L3 16M3 21v-5h5"/></svg>
+              </button>
             </div>
           </div>
-          <div class="overflow-auto border border-blush/50 rounded-xl max-h-96">
-            <table class="min-w-full text-sm">
-              <thead class="bg-blush/30 text-charcoal sticky top-0">
+
+          <div class="grid md:grid-cols-[1fr_auto_auto_auto] gap-2">
+            <label class="relative block">
+              <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-charcoal/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              <input id="guests-search" type="search" placeholder="Search name, notes, or household…" class="w-full pl-9 pr-3 py-2 rounded-xl border border-blush/60 focus:border-magenta focus:ring-2 focus:ring-blush/60 text-sm" />
+            </label>
+            <select id="guests-filter" class="px-3 py-2 rounded-xl border border-blush/60 text-sm bg-surface">
+              <option value="all">All guests</option>
+              <option value="responded">Responded</option>
+              <option value="pending">Not responded</option>
+              <option value="yes">Yes</option>
+              <option value="maybe">Maybe</option>
+              <option value="no">No</option>
+              <option value="plusone">+1 allowed</option>
+              <option value="kids">Has kids</option>
+              <option value="thanked">Thank-you sent</option>
+              <option value="unthanked">Thank-you not sent</option>
+            </select>
+            <select id="guests-sort" class="px-3 py-2 rounded-xl border border-blush/60 text-sm bg-surface">
+              <option value="name">Sort: Name</option>
+              <option value="rsvp">Sort: RSVP</option>
+              <option value="household">Sort: Household</option>
+              <option value="created">Sort: Created</option>
+            </select>
+            <label class="inline-flex items-center gap-2 text-sm text-charcoal/80 px-3 py-2 rounded-xl border border-blush/60 cursor-pointer select-none">
+              <input type="checkbox" id="guests-group-household" class="rounded" />
+              Group by household
+            </label>
+          </div>
+
+          <div class="overflow-auto md:border md:border-blush/50 md:rounded-xl md:max-h-[32rem]">
+            <table class="guests-table min-w-full text-sm">
+              <thead class="bg-blush/30 text-charcoal sticky top-0 z-10">
                 <tr>
                   <th class="px-3 py-2 w-8"><input type="checkbox" id="guests-select-all" class="rounded" /></th>
                   <th class="text-left px-3 py-2">Name</th>
-                  <th class="text-left px-3 py-2">Dietary</th>
+                  <th class="text-left px-3 py-2">RSVP</th>
                   <th class="text-left px-3 py-2">Household</th>
+                  <th class="text-left px-3 py-2">Dietary</th>
                   <th class="text-left px-3 py-2">+1</th>
                   <th class="text-left px-3 py-2">Kids</th>
-                  <th class="text-left px-3 py-2">Thank you</th>
+                  <th class="text-left px-3 py-2">Thank&nbsp;you</th>
                   <th class="text-left px-3 py-2">Notes</th>
                   <th class="text-left px-3 py-2 w-20">Actions</th>
                 </tr>
@@ -117,7 +203,38 @@
               <tbody id="guests-tbody" class="divide-y divide-blush/40"></tbody>
             </table>
           </div>
+
+          <div id="guests-empty" class="hidden text-center py-10 border border-dashed border-blush/60 rounded-xl bg-blush/10">
+            <p class="font-display text-2xl text-charcoal/80 mb-1">No guests yet</p>
+            <p class="text-sm text-charcoal/60">Add your first guest or import a list to get started.</p>
+          </div>
+
           <p id="guests-list-status" class="text-sm text-charcoal/70"></p>
+        </section>
+
+        <!-- Recent RSVP responses -->
+        <section class="bg-surface border border-blush/50 rounded-2xl shadow-sm p-6 space-y-4">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <h3 class="text-lg font-semibold text-charcoal">Recent RSVP responses</h3>
+            <button id="guests-refresh-rsvp" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-blush/60 hover:border-magenta/40 text-sm transition" aria-label="Refresh">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.3L3 16M3 21v-5h5"/></svg>
+            </button>
+          </div>
+          <div class="overflow-auto border border-blush/50 rounded-xl max-h-72">
+            <table class="min-w-full text-sm">
+              <thead class="bg-blush/30 text-charcoal sticky top-0">
+                <tr>
+                  <th class="text-left px-3 py-2">Name</th>
+                  <th class="text-left px-3 py-2">RSVP</th>
+                  <th class="text-left px-3 py-2">Allergies</th>
+                  <th class="text-left px-3 py-2">Note</th>
+                  <th class="text-left px-3 py-2">Time</th>
+                </tr>
+              </thead>
+              <tbody id="admin-rsvp-rows" class="divide-y divide-blush/40"></tbody>
+            </table>
+          </div>
+          <p id="admin-rsvp-status" class="text-sm text-charcoal/70"></p>
         </section>
       </div>
 
@@ -221,6 +338,85 @@
       </div>
     </section>
   </main>
+
+  <!-- Import modal -->
+  <div id="import-modal" class="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4 hidden">
+    <div class="bg-surface rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-4">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h3 class="text-lg font-semibold text-charcoal">Import guests</h3>
+          <p class="text-sm text-charcoal/70 mt-1">Upload a CSV or JSON file, or paste JSON. Columns: <code class="text-xs">name, dietaryRestrictions, notes, householdId, plusOneAllowed, hasKids, thankYouSent</code>.</p>
+        </div>
+        <button type="button" id="import-modal-close" class="text-charcoal/50 hover:text-charcoal" aria-label="Close">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-blush/60 text-sm cursor-pointer hover:border-magenta/40 transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          <span>Choose CSV/JSON file</span>
+          <input id="guests-file" type="file" accept=".csv,.json" class="hidden" />
+        </label>
+        <span id="guests-file-name" class="text-xs text-charcoal/60 ml-2"></span>
+
+        <label class="block">
+          <span class="text-sm font-medium text-charcoal">Or paste JSON</span>
+          <textarea id="guests-raw" rows="5" class="w-full mt-1 px-3 py-2 rounded-xl border border-blush/60 focus:border-magenta focus:ring-2 focus:ring-blush/60 text-sm font-mono" placeholder='[{ "name": "Jane Doe", "householdId": "doe-family", "plusOneAllowed": true }]'></textarea>
+        </label>
+      </div>
+
+      <div>
+        <p class="text-sm font-medium text-charcoal mb-2">Preview <span id="import-preview-count" class="text-xs text-charcoal/60 font-normal"></span></p>
+        <div id="import-preview-wrap" class="border border-blush/50 rounded-xl max-h-64 overflow-auto">
+          <p id="import-preview-empty" class="text-sm text-charcoal/60 text-center py-6">No data loaded yet.</p>
+          <table id="import-preview-table" class="min-w-full text-xs hidden">
+            <thead class="bg-blush/30 text-charcoal sticky top-0">
+              <tr>
+                <th class="text-left px-2 py-1.5">Name</th>
+                <th class="text-left px-2 py-1.5">Household</th>
+                <th class="text-left px-2 py-1.5">Dietary</th>
+                <th class="text-left px-2 py-1.5">+1</th>
+                <th class="text-left px-2 py-1.5">Kids</th>
+                <th class="text-left px-2 py-1.5">Thanked</th>
+              </tr>
+            </thead>
+            <tbody id="import-preview-tbody" class="divide-y divide-blush/40"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <fieldset class="space-y-2">
+        <legend class="text-sm font-medium text-charcoal mb-1">Import mode</legend>
+        <label class="flex items-start gap-2 p-3 rounded-xl border border-blush/60 cursor-pointer hover:border-magenta/40 transition has-[:checked]:border-magenta has-[:checked]:bg-blush/20">
+          <input type="radio" name="import-mode" value="merge" class="mt-0.5" checked />
+          <span>
+            <span class="text-sm font-medium text-charcoal block">Merge</span>
+            <span class="text-xs text-charcoal/70">Add new guests; update existing ones matched by name (case-insensitive). Safe default.</span>
+          </span>
+        </label>
+        <label class="flex items-start gap-2 p-3 rounded-xl border border-blush/60 cursor-pointer hover:border-magenta/40 transition has-[:checked]:border-magenta has-[:checked]:bg-blush/20">
+          <input type="radio" name="import-mode" value="replace" class="mt-0.5" />
+          <span>
+            <span class="text-sm font-medium text-charcoal block">Replace all</span>
+            <span class="text-xs text-magenta">Destructive: deletes every existing guest first, then inserts the imported list.</span>
+          </span>
+        </label>
+      </fieldset>
+
+      <div id="import-replace-confirm" class="hidden p-3 rounded-xl bg-blush/30 border border-magenta/40 space-y-2">
+        <p class="text-sm text-charcoal">Type <code class="font-mono text-magenta">REPLACE</code> to confirm you want to delete all existing guests before importing.</p>
+        <input id="import-replace-confirm-input" type="text" class="w-full px-3 py-2 rounded-xl border border-blush/60 text-sm font-mono" placeholder="REPLACE" />
+      </div>
+
+      <p id="guests-import-status" class="text-sm text-charcoal/70 min-h-[1.25rem]"></p>
+
+      <div class="flex gap-2 justify-end">
+        <button type="button" id="import-modal-cancel" class="px-4 py-2 rounded-xl border border-blush/60 hover:border-magenta/40">Cancel</button>
+        <button type="button" id="guests-save-import" class="px-4 py-2 rounded-xl bg-magenta text-white font-semibold hover:bg-magenta/90 disabled:opacity-50 disabled:cursor-not-allowed">Import</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Guest edit modal -->
   <div id="guest-modal" class="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50 p-4 hidden">

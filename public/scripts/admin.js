@@ -82,7 +82,6 @@
     const current = activeTab || (document.querySelector('[data-tab-panel].active')?.id?.replace('panel-', '') || 'guests');
     if (current === 'guests') {
       loadGuests();
-      refreshRsvps();
     } else if (current === 'rsvp-controls') {
       loadRsvpControls();
     } else if (current === 'site-content') {
@@ -101,18 +100,32 @@
   // ----- Guests -----
   const fileInput = document.getElementById('guests-file');
   const rawInput = document.getElementById('guests-raw');
-  const previewEl = document.getElementById('guests-preview');
-  const uploadBtn = document.getElementById('guests-save-import');
   const importStatus = document.getElementById('guests-import-status');
   const guestsTbody = document.getElementById('guests-tbody');
+  const guestsEmpty = document.getElementById('guests-empty');
   const guestsListStatus = document.getElementById('guests-list-status');
   const selectAllCheckbox = document.getElementById('guests-select-all');
   const bulkDeleteBtn = document.getElementById('guests-bulk-delete');
+  const searchInput = document.getElementById('guests-search');
+  const filterSelect = document.getElementById('guests-filter');
+  const sortSelect = document.getElementById('guests-sort');
+  const groupToggle = document.getElementById('guests-group-household');
   const selectedIds = new Set();
 
+  let rsvps = [];
+  const viewState = { q: '', filter: 'all', sort: 'name', groupByHousehold: false };
+
+  const escapeHtml = (s) => {
+    if (s === undefined || s === null || s === '') return '';
+    const div = document.createElement('div');
+    div.textContent = String(s);
+    return div.innerHTML;
+  };
+
   const setImportStatus = (msg, tone = 'info') => {
+    if (!importStatus) return;
     importStatus.textContent = msg;
-    importStatus.className = `text-sm ${tone === 'error' ? 'text-magenta' : 'text-charcoal/70'}`;
+    importStatus.className = `text-sm min-h-[1.25rem] ${tone === 'error' ? 'text-magenta' : 'text-charcoal/70'}`;
   };
 
   const setListStatus = (msg, tone = 'info') => {
@@ -139,115 +152,202 @@
         householdId: entry.householdid || entry.household || '',
         plusOneAllowed: ['true', '1', 'yes'].includes((entry.plusoneallowed || entry.plusone || '').toLowerCase()),
         hasKids: ['true', '1', 'yes'].includes((entry.haskids || entry.kids || '').toLowerCase()),
+        thankYouSent: ['true', '1', 'yes'].includes((entry.thankyousent || entry.thanked || '').toLowerCase()),
       };
     }).filter((e) => e.name);
   };
 
-  const updatePreview = (data) => {
-    previewData = data;
-    previewEl.textContent = JSON.stringify(data, null, 2);
+  // Build { byGuestId, byNameLower } maps, latest RSVP wins by createdAt.
+  const buildRsvpIndex = (list) => {
+    const byGuestId = new Map();
+    const byNameLower = new Map();
+    const latest = (prev, next) => {
+      if (!prev) return next;
+      return new Date(next.createdAt || 0) > new Date(prev.createdAt || 0) ? next : prev;
+    };
+    (list || []).forEach((r) => {
+      if (r.guestId) byGuestId.set(r.guestId, latest(byGuestId.get(r.guestId), r));
+      const key = String(r.name || '').trim().toLowerCase();
+      if (key) byNameLower.set(key, latest(byNameLower.get(key), r));
+    });
+    return { byGuestId, byNameLower };
   };
 
-  fileInput?.addEventListener('change', async () => {
-    const file = fileInput.files?.[0];
-    if (!file) return;
-    const text = await file.text();
-    try {
-      if (file.name.endsWith('.json')) {
-        const parsed = JSON.parse(text);
-        const arr = Array.isArray(parsed) ? parsed : parsed.guests;
-        if (!Array.isArray(arr)) throw new Error('JSON must be an array or { guests: [] }');
-        updatePreview(arr);
-      } else {
-        updatePreview(parseCsv(text));
+  const getRsvpForGuest = (g, index) => {
+    if (!g) return null;
+    const byId = g.id && index.byGuestId.get(g.id);
+    if (byId) return byId;
+    const byName = index.byNameLower.get(String(g.name || '').trim().toLowerCase());
+    return byName || null;
+  };
+
+  const annotateGuestsWithRsvps = () => {
+    const idx = buildRsvpIndex(rsvps);
+    guests.forEach((g) => {
+      const r = getRsvpForGuest(g, idx);
+      g.rsvpStatus = r ? String(r.rsvp || '').toLowerCase() : '';
+      g.rsvpAt = r ? r.createdAt : null;
+    });
+  };
+
+  const rsvpPill = (status) => {
+    const map = {
+      yes: 'bg-magenta/15 text-magenta border-magenta/30',
+      maybe: 'bg-blush/60 text-charcoal border-blush',
+      no: 'bg-charcoal/10 text-charcoal/70 border-charcoal/20',
+    };
+    if (!status) {
+      return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs border border-dashed border-charcoal/25 text-charcoal/50">Pending</span>`;
+    }
+    const cls = map[status] || 'bg-blush/40 text-charcoal border-blush/60';
+    const label = status.charAt(0).toUpperCase() + status.slice(1);
+    return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs border ${cls} capitalize">${label}</span>`;
+  };
+
+  const getVisibleGuests = () => {
+    const q = viewState.q.trim().toLowerCase();
+    let list = guests.filter((g) => {
+      if (q) {
+        const hay = `${g.name} ${g.notes || ''} ${g.householdId || ''} ${g.dietaryRestrictions || ''}`.toLowerCase();
+        if (!hay.includes(q)) return false;
       }
-      setImportStatus('Preview loaded');
-    } catch (err) {
-      setImportStatus('Could not parse file', 'error');
-    }
-  });
-
-  rawInput?.addEventListener('input', () => {
-    try {
-      if (!rawInput.value.trim()) { updatePreview([]); return; }
-      const parsed = JSON.parse(rawInput.value);
-      const arr = Array.isArray(parsed) ? parsed : parsed.guests;
-      if (!Array.isArray(arr)) throw new Error('JSON must be an array');
-      updatePreview(arr);
-      setImportStatus('Preview from pasted JSON');
-    } catch (err) {
-      setImportStatus('Invalid JSON', 'error');
-    }
-  });
-
-  uploadBtn?.addEventListener('click', async () => {
-    if (!token) return setImportStatus('Please login first', 'error');
-    if (!previewData.length) return setImportStatus('No data to upload', 'error');
-    setImportStatus('Uploading...');
-    try {
-      const res = await api('/api/guests/import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(previewData),
-      });
-      if (!res.ok) throw new Error('upload failed');
-      const data = await res.json();
-      setImportStatus(`Saved ${data.count} guest(s)`);
-      loadGuests();
-    } catch (err) {
-      setImportStatus('Upload failed', 'error');
-    }
-  });
-
-  const loadGuests = async () => {
-    if (!token) return setListStatus('Login to view guests', 'error');
-    setListStatus('Loading...');
-    try {
-      const res = await api('/api/guests');
-      if (!res.ok) throw new Error('fetch failed');
-      guests = await res.json();
-      selectedIds.clear();
-      renderGuestsTable();
-      setListStatus(`${guests.length} guest(s)`);
-    } catch (err) {
-      setListStatus('Could not load guests', 'error');
-    }
+      switch (viewState.filter) {
+        case 'responded': return !!g.rsvpStatus;
+        case 'pending': return !g.rsvpStatus;
+        case 'yes':
+        case 'maybe':
+        case 'no': return g.rsvpStatus === viewState.filter;
+        case 'plusone': return !!g.plusOneAllowed;
+        case 'kids': return !!g.hasKids;
+        case 'thanked': return !!g.thankYouSent;
+        case 'unthanked': return !g.thankYouSent;
+        default: return true;
+      }
+    });
+    const rsvpOrder = { yes: 0, maybe: 1, no: 2, '': 3 };
+    list.sort((a, b) => {
+      switch (viewState.sort) {
+        case 'rsvp': {
+          const d = (rsvpOrder[a.rsvpStatus || ''] ?? 3) - (rsvpOrder[b.rsvpStatus || ''] ?? 3);
+          if (d !== 0) return d;
+          return a.name.localeCompare(b.name);
+        }
+        case 'household': {
+          const ah = (a.householdId || '\uffff').toLowerCase();
+          const bh = (b.householdId || '\uffff').toLowerCase();
+          if (ah !== bh) return ah < bh ? -1 : 1;
+          return a.name.localeCompare(b.name);
+        }
+        case 'created':
+          return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        case 'name':
+        default:
+          return a.name.localeCompare(b.name);
+      }
+    });
+    return list;
   };
 
   const updateBulkDeleteBtn = () => {
+    if (!bulkDeleteBtn) return;
     if (selectedIds.size > 0) {
-      bulkDeleteBtn.textContent = `Delete selected (${selectedIds.size})`;
+      bulkDeleteBtn.innerHTML = `
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/></svg>
+        Delete selected (${selectedIds.size})`;
       bulkDeleteBtn.classList.remove('hidden');
+      bulkDeleteBtn.classList.add('inline-flex');
     } else {
       bulkDeleteBtn.classList.add('hidden');
+      bulkDeleteBtn.classList.remove('inline-flex');
     }
     if (selectAllCheckbox) {
-      selectAllCheckbox.checked = guests.length > 0 && selectedIds.size === guests.length;
-      selectAllCheckbox.indeterminate = selectedIds.size > 0 && selectedIds.size < guests.length;
+      const visible = getVisibleGuests();
+      const visibleIds = visible.map((g) => g.id);
+      const selectedInView = visibleIds.filter((id) => selectedIds.has(id)).length;
+      selectAllCheckbox.checked = visible.length > 0 && selectedInView === visible.length;
+      selectAllCheckbox.indeterminate = selectedInView > 0 && selectedInView < visible.length;
     }
   };
 
+  const checkCell = (val, label) => `
+    <td class="px-3 py-2" data-label="${label}">
+      ${val
+        ? '<svg class="w-4 h-4 text-magenta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>'
+        : '<span class="text-charcoal/30">—</span>'}
+    </td>`;
+
+  const guestRowHtml = (g) => `
+    <tr class="hover:bg-blush/20 align-top">
+      <td class="px-3 py-2 guests-row-select"><input type="checkbox" data-guest-select="${g.id}" class="rounded" ${selectedIds.has(g.id) ? 'checked' : ''} /></td>
+      <td class="px-3 py-2 font-medium guests-row-name">${escapeHtml(g.name)}</td>
+      <td class="px-3 py-2" data-label="RSVP" title="${g.rsvpAt ? 'Responded ' + new Date(g.rsvpAt).toLocaleString() : ''}">${rsvpPill(g.rsvpStatus)}</td>
+      <td class="px-3 py-2 text-charcoal/80 max-w-[140px] truncate" data-label="Household" title="${escapeHtml(g.householdId || '')}">${g.householdId ? escapeHtml(g.householdId) : '<span class="text-charcoal/30">—</span>'}</td>
+      <td class="px-3 py-2 text-charcoal/80 max-w-[140px] truncate" data-label="Dietary" title="${escapeHtml(g.dietaryRestrictions || '')}">${g.dietaryRestrictions ? escapeHtml(g.dietaryRestrictions) : '<span class="text-charcoal/30">—</span>'}</td>
+      ${checkCell(g.plusOneAllowed, '+1')}
+      ${checkCell(g.hasKids, 'Kids')}
+      ${checkCell(g.thankYouSent, 'Thank you')}
+      <td class="px-3 py-2 text-charcoal/80 max-w-[180px] truncate" data-label="Notes" title="${escapeHtml(g.notes || '')}">${g.notes ? escapeHtml(g.notes) : '<span class="text-charcoal/30">—</span>'}</td>
+      <td class="px-3 py-2 guests-row-actions" data-label="">
+        <div class="flex gap-1 justify-end md:justify-start">
+          <button type="button" data-guest-edit="${g.id}" class="p-1.5 rounded-lg border border-blush/60 text-charcoal/70 hover:text-magenta hover:border-magenta/40 transition" aria-label="Edit ${escapeHtml(g.name)}" title="Edit">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button type="button" data-guest-delete="${g.id}" class="p-1.5 rounded-lg border border-blush/60 text-charcoal/70 hover:text-magenta hover:border-magenta/40 transition" aria-label="Delete ${escapeHtml(g.name)}" title="Delete">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+
+  const householdHeaderHtml = (hh, members) => {
+    const plus = members.filter((m) => m.plusOneAllowed).length;
+    const kids = members.filter((m) => m.hasKids).length;
+    const responded = members.filter((m) => m.rsvpStatus).length;
+    const label = hh ? escapeHtml(hh) : '(No household)';
+    const bits = [`${members.length} member${members.length === 1 ? '' : 's'}`];
+    if (plus) bits.push(`${plus} +1`);
+    if (kids) bits.push(`${kids} w/ kids`);
+    bits.push(`${responded}/${members.length} responded`);
+    return `
+      <tr class="guests-group-row bg-blush/30 border-y border-blush/50">
+        <td colspan="10" class="px-3 py-2 text-xs uppercase tracking-wider text-charcoal/80 font-semibold">
+          <span class="text-charcoal">${label}</span>
+          <span class="ml-2 font-normal normal-case tracking-normal text-charcoal/60">${bits.join(' · ')}</span>
+        </td>
+      </tr>`;
+  };
+
   const renderGuestsTable = () => {
-    guestsTbody.innerHTML = guests
-      .map(
-        (g) => `
-          <tr class="hover:bg-blush/20">
-            <td class="px-3 py-2"><input type="checkbox" data-guest-select="${g.id}" class="rounded" ${selectedIds.has(g.id) ? 'checked' : ''} /></td>
-            <td class="px-3 py-2 font-medium">${escapeHtml(g.name)}</td>
-            <td class="px-3 py-2 text-charcoal/80 max-w-[120px] truncate" title="${escapeHtml(g.dietaryRestrictions || '')}">${escapeHtml(g.dietaryRestrictions || '')}</td>
-            <td class="px-3 py-2 text-charcoal/80 max-w-[100px] truncate" title="${escapeHtml(g.householdId || '')}">${escapeHtml(g.householdId || '—')}</td>
-            <td class="px-3 py-2">${g.plusOneAllowed ? '✓' : '—'}</td>
-            <td class="px-3 py-2">${g.hasKids ? '✓' : '—'}</td>
-            <td class="px-3 py-2">${g.thankYouSent ? '✓' : '—'}</td>
-            <td class="px-3 py-2 text-charcoal/80 max-w-[120px] truncate" title="${escapeHtml(g.notes || '')}">${escapeHtml(g.notes || '')}</td>
-            <td class="px-3 py-2">
-              <button type="button" data-guest-edit="${g.id}" class="text-magenta hover:underline text-xs">Edit</button>
-              <button type="button" data-guest-delete="${g.id}" class="text-magenta hover:underline text-xs ml-1">Delete</button>
-            </td>
-          </tr>
-        `
-      )
-      .join('');
+    const visible = getVisibleGuests();
+
+    if (!guests.length) {
+      guestsTbody.innerHTML = '';
+      if (guestsEmpty) guestsEmpty.classList.remove('hidden');
+    } else if (guestsEmpty) {
+      guestsEmpty.classList.add('hidden');
+    }
+
+    if (viewState.groupByHousehold && visible.length) {
+      const groups = new Map();
+      visible.forEach((g) => {
+        const key = g.householdId || '';
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(g);
+      });
+      // Sort: named households first alpha, then "(No household)"
+      const entries = [...groups.entries()].sort(([a], [b]) => {
+        if (!a && !b) return 0;
+        if (!a) return 1;
+        if (!b) return -1;
+        return a.localeCompare(b);
+      });
+      guestsTbody.innerHTML = entries
+        .map(([hh, members]) => householdHeaderHtml(hh, members) + members.map(guestRowHtml).join(''))
+        .join('');
+    } else {
+      guestsTbody.innerHTML = visible.map(guestRowHtml).join('');
+    }
+
     guestsTbody.querySelectorAll('[data-guest-select]').forEach((cb) => {
       cb.addEventListener('change', () => {
         const id = cb.getAttribute('data-guest-select');
@@ -262,13 +362,60 @@
       btn.addEventListener('click', () => deleteGuest(btn.getAttribute('data-guest-delete')));
     });
     updateBulkDeleteBtn();
+    setListStatus(
+      visible.length === guests.length
+        ? `${guests.length} guest${guests.length === 1 ? '' : 's'}`
+        : `${visible.length} of ${guests.length} guest${guests.length === 1 ? '' : 's'}`
+    );
   };
 
-  const escapeHtml = (s) => {
-    if (!s) return '';
-    const div = document.createElement('div');
-    div.textContent = s;
-    return div.innerHTML;
+  const renderStats = () => {
+    const total = guests.length;
+    const households = new Set(guests.map((g) => g.householdId).filter(Boolean)).size;
+    const plusOnes = guests.filter((g) => g.plusOneAllowed).length;
+    const kids = guests.filter((g) => g.hasKids).length;
+    const yes = guests.filter((g) => g.rsvpStatus === 'yes').length;
+    const maybe = guests.filter((g) => g.rsvpStatus === 'maybe').length;
+    const no = guests.filter((g) => g.rsvpStatus === 'no').length;
+    const pending = guests.filter((g) => !g.rsvpStatus).length;
+
+    const setText = (id, n) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = String(n);
+    };
+    setText('stat-total', total);
+    setText('stat-households', households);
+    setText('stat-plusones', plusOnes);
+    setText('stat-kids', kids);
+    setText('count-yes', yes);
+    setText('count-maybe', maybe);
+    setText('count-no', no);
+    setText('stat-pending', pending);
+  };
+
+  const loadGuests = async () => {
+    if (!token) return setListStatus('Login to view guests', 'error');
+    setListStatus('Loading...');
+    try {
+      const [gRes, rRes] = await Promise.all([
+        api('/api/guests'),
+        api('/api/rsvps'),
+      ]);
+      if (!gRes.ok) throw new Error('fetch failed');
+      guests = await gRes.json();
+      if (rRes.ok) {
+        const data = await rRes.json();
+        rsvps = data.results || [];
+      }
+      selectedIds.clear();
+      annotateGuestsWithRsvps();
+      renderStats();
+      renderGuestsTable();
+      renderRsvpTable();
+      setRsvpStatus(`${rsvps.length} response${rsvps.length === 1 ? '' : 's'}`);
+    } catch (err) {
+      setListStatus('Could not load guests', 'error');
+    }
   };
 
 
@@ -608,26 +755,32 @@
   });
 
   const deleteGuest = async (id) => {
-    if (!confirm('Remove this guest?')) return;
+    const g = guests.find((x) => x.id === id);
+    const label = g ? `"${g.name}"` : 'this guest';
+    if (!confirm(`Remove ${label}? This cannot be undone.`)) return;
     try {
       const res = await api(`/api/guests/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error();
+      selectedIds.delete(id);
       loadGuests();
-    } catch (_) {}
+    } catch (_) {
+      setListStatus('Could not delete guest', 'error');
+    }
   };
 
   selectAllCheckbox?.addEventListener('change', () => {
+    const visible = getVisibleGuests();
     if (selectAllCheckbox.checked) {
-      guests.forEach((g) => selectedIds.add(g.id));
+      visible.forEach((g) => selectedIds.add(g.id));
     } else {
-      selectedIds.clear();
+      visible.forEach((g) => selectedIds.delete(g.id));
     }
     renderGuestsTable();
   });
 
   bulkDeleteBtn?.addEventListener('click', async () => {
     if (!selectedIds.size) return;
-    if (!confirm(`Delete ${selectedIds.size} guest(s)?`)) return;
+    if (!confirm(`Delete ${selectedIds.size} guest${selectedIds.size === 1 ? '' : 's'}? This cannot be undone.`)) return;
     setListStatus('Deleting...');
     try {
       const res = await api('/api/guests', {
@@ -645,15 +798,86 @@
 
   document.getElementById('guests-refresh-list')?.addEventListener('click', () => { loadGuests(); });
 
+  // Toolbar controls
+  searchInput?.addEventListener('input', () => {
+    viewState.q = searchInput.value;
+    renderGuestsTable();
+  });
+  filterSelect?.addEventListener('change', () => {
+    viewState.filter = filterSelect.value;
+    renderGuestsTable();
+  });
+  sortSelect?.addEventListener('change', () => {
+    viewState.sort = sortSelect.value;
+    renderGuestsTable();
+  });
+  groupToggle?.addEventListener('change', () => {
+    viewState.groupByHousehold = groupToggle.checked;
+    renderGuestsTable();
+  });
+
+  // Export CSV
+  const csvCell = (val) => {
+    const s = val === undefined || val === null ? '' : String(val);
+    if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  };
+  document.getElementById('guests-export-btn')?.addEventListener('click', () => {
+    const list = getVisibleGuests();
+    const source = list.length ? list : guests;
+    const header = ['name', 'householdId', 'plusOneAllowed', 'hasKids', 'thankYouSent', 'dietaryRestrictions', 'notes', 'rsvp', 'rsvpAt'];
+    const rows = source.map((g) => [
+      g.name,
+      g.householdId || '',
+      g.plusOneAllowed ? 'true' : 'false',
+      g.hasKids ? 'true' : 'false',
+      g.thankYouSent ? 'true' : 'false',
+      g.dietaryRestrictions || '',
+      g.notes || '',
+      g.rsvpStatus || '',
+      g.rsvpAt || '',
+    ].map(csvCell).join(','));
+    const csv = [header.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const stamp = new Date().toISOString().slice(0, 10);
+    a.download = `guests-${stamp}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // RSVP overview table (recent responses)
   const rsvpRows = document.getElementById('admin-rsvp-rows');
-  const rsvpStatus = document.getElementById('admin-rsvp-status');
-  const countYes = document.getElementById('count-yes');
-  const countMaybe = document.getElementById('count-maybe');
-  const countNo = document.getElementById('count-no');
+  const rsvpStatusEl = document.getElementById('admin-rsvp-status');
 
   const setRsvpStatus = (msg, tone = 'info') => {
-    rsvpStatus.textContent = msg;
-    rsvpStatus.className = `text-sm ${tone === 'error' ? 'text-magenta' : 'text-charcoal/70'}`;
+    if (!rsvpStatusEl) return;
+    rsvpStatusEl.textContent = msg;
+    rsvpStatusEl.className = `text-sm ${tone === 'error' ? 'text-magenta' : 'text-charcoal/70'}`;
+  };
+
+  const renderRsvpTable = () => {
+    if (!rsvpRows) return;
+    if (!rsvps.length) {
+      rsvpRows.innerHTML = `<tr><td colspan="5" class="px-3 py-6 text-center text-charcoal/50 text-sm">No responses yet.</td></tr>`;
+      return;
+    }
+    const sorted = [...rsvps].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    rsvpRows.innerHTML = sorted
+      .map((row) => `
+        <tr>
+          <td class="px-3 py-2 font-medium">${escapeHtml(row.name)}</td>
+          <td class="px-3 py-2">${rsvpPill(String(row.rsvp || '').toLowerCase())}</td>
+          <td class="px-3 py-2 text-charcoal/80">${escapeHtml(row.allergies || '')}</td>
+          <td class="px-3 py-2 text-charcoal/80">${escapeHtml(row.note || '')}</td>
+          <td class="px-3 py-2 text-xs text-charcoal/60 whitespace-nowrap">${row.createdAt ? new Date(row.createdAt).toLocaleString() : ''}</td>
+        </tr>
+      `)
+      .join('');
   };
 
   const refreshRsvps = async () => {
@@ -663,33 +887,164 @@
       const res = await api('/api/rsvps');
       if (!res.ok) throw new Error('fetch failed');
       const data = await res.json();
-      const rows = data.results || [];
-      rsvpRows.innerHTML = rows
-        .map(
-          (row) => `
-            <tr>
-              <td class="px-3 py-2">${escapeHtml(row.name)}</td>
-              <td class="px-3 py-2 capitalize">${escapeHtml(row.rsvp)}</td>
-              <td class="px-3 py-2 text-slate-600">${escapeHtml(row.allergies || '')}</td>
-              <td class="px-3 py-2 text-slate-600">${escapeHtml(row.note || '')}</td>
-              <td class="px-3 py-2 text-xs text-slate-500">${new Date(row.createdAt).toLocaleString()}</td>
-            </tr>
-          `
-        )
-        .join('');
-      const yes = rows.filter((r) => r.rsvp === 'yes').length;
-      const maybe = rows.filter((r) => r.rsvp === 'maybe').length;
-      const no = rows.filter((r) => r.rsvp === 'no').length;
-      countYes.textContent = yes;
-      countMaybe.textContent = maybe;
-      countNo.textContent = no;
-      setRsvpStatus(`Loaded ${rows.length} response(s)`);
+      rsvps = data.results || [];
+      annotateGuestsWithRsvps();
+      renderStats();
+      renderGuestsTable();
+      renderRsvpTable();
+      setRsvpStatus(`${rsvps.length} response${rsvps.length === 1 ? '' : 's'}`);
     } catch (err) {
       setRsvpStatus('Could not load RSVPs', 'error');
     }
   };
 
   document.getElementById('guests-refresh-rsvp')?.addEventListener('click', refreshRsvps);
+
+  // ----- Import modal -----
+  const importModal = document.getElementById('import-modal');
+  const importOpenBtn = document.getElementById('guests-import-btn');
+  const importCancelBtn = document.getElementById('import-modal-cancel');
+  const importCloseBtn = document.getElementById('import-modal-close');
+  const importSaveBtn = document.getElementById('guests-save-import');
+  const importPreviewTable = document.getElementById('import-preview-table');
+  const importPreviewTbody = document.getElementById('import-preview-tbody');
+  const importPreviewEmpty = document.getElementById('import-preview-empty');
+  const importPreviewCount = document.getElementById('import-preview-count');
+  const importReplaceConfirm = document.getElementById('import-replace-confirm');
+  const importReplaceConfirmInput = document.getElementById('import-replace-confirm-input');
+  const importFileName = document.getElementById('guests-file-name');
+
+  const getImportMode = () => (document.querySelector('input[name="import-mode"]:checked')?.value || 'merge');
+
+  const updateImportPreview = (data) => {
+    previewData = Array.isArray(data) ? data : [];
+    if (!previewData.length) {
+      importPreviewTable?.classList.add('hidden');
+      importPreviewEmpty?.classList.remove('hidden');
+      if (importPreviewCount) importPreviewCount.textContent = '';
+    } else {
+      importPreviewEmpty?.classList.add('hidden');
+      importPreviewTable?.classList.remove('hidden');
+      importPreviewTbody.innerHTML = previewData
+        .slice(0, 100)
+        .map((g) => `
+          <tr>
+            <td class="px-2 py-1 font-medium">${escapeHtml(g.name || '')}</td>
+            <td class="px-2 py-1 text-charcoal/70">${escapeHtml(g.householdId || '')}</td>
+            <td class="px-2 py-1 text-charcoal/70">${escapeHtml(g.dietaryRestrictions || '')}</td>
+            <td class="px-2 py-1">${g.plusOneAllowed ? '✓' : ''}</td>
+            <td class="px-2 py-1">${g.hasKids ? '✓' : ''}</td>
+            <td class="px-2 py-1">${g.thankYouSent ? '✓' : ''}</td>
+          </tr>`)
+        .join('');
+      if (importPreviewCount) {
+        const extra = previewData.length > 100 ? ` (showing first 100)` : '';
+        importPreviewCount.textContent = `· ${previewData.length} row${previewData.length === 1 ? '' : 's'}${extra}`;
+      }
+    }
+    updateImportSaveState();
+  };
+
+  const updateImportSaveState = () => {
+    const mode = getImportMode();
+    const hasData = previewData.length > 0;
+    if (mode === 'replace') {
+      importReplaceConfirm?.classList.remove('hidden');
+      const ok = hasData && importReplaceConfirmInput?.value.trim() === 'REPLACE';
+      if (importSaveBtn) importSaveBtn.disabled = !ok;
+    } else {
+      importReplaceConfirm?.classList.add('hidden');
+      if (importSaveBtn) importSaveBtn.disabled = !hasData;
+    }
+  };
+
+  const openImportModal = () => {
+    if (!importModal) return;
+    // Reset
+    previewData = [];
+    if (fileInput) fileInput.value = '';
+    if (rawInput) rawInput.value = '';
+    if (importFileName) importFileName.textContent = '';
+    const mergeRadio = document.querySelector('input[name="import-mode"][value="merge"]');
+    if (mergeRadio) mergeRadio.checked = true;
+    if (importReplaceConfirmInput) importReplaceConfirmInput.value = '';
+    setImportStatus('');
+    updateImportPreview([]);
+    importModal.classList.remove('hidden');
+  };
+  const closeImportModal = () => importModal?.classList.add('hidden');
+
+  importOpenBtn?.addEventListener('click', openImportModal);
+  importCancelBtn?.addEventListener('click', closeImportModal);
+  importCloseBtn?.addEventListener('click', closeImportModal);
+  importModal?.addEventListener('click', (e) => {
+    if (e.target === importModal) closeImportModal();
+  });
+
+  document.querySelectorAll('input[name="import-mode"]').forEach((r) => {
+    r.addEventListener('change', updateImportSaveState);
+  });
+  importReplaceConfirmInput?.addEventListener('input', updateImportSaveState);
+
+  fileInput?.addEventListener('change', async () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+    if (importFileName) importFileName.textContent = file.name;
+    const text = await file.text();
+    try {
+      if (file.name.toLowerCase().endsWith('.json')) {
+        const parsed = JSON.parse(text);
+        const arr = Array.isArray(parsed) ? parsed : parsed.guests;
+        if (!Array.isArray(arr)) throw new Error('JSON must be an array or { guests: [] }');
+        updateImportPreview(arr);
+      } else {
+        updateImportPreview(parseCsv(text));
+      }
+      setImportStatus(`Previewed ${previewData.length} row${previewData.length === 1 ? '' : 's'}`);
+    } catch (err) {
+      setImportStatus('Could not parse file', 'error');
+    }
+  });
+
+  rawInput?.addEventListener('input', () => {
+    try {
+      if (!rawInput.value.trim()) { updateImportPreview([]); return; }
+      const parsed = JSON.parse(rawInput.value);
+      const arr = Array.isArray(parsed) ? parsed : parsed.guests;
+      if (!Array.isArray(arr)) throw new Error('JSON must be an array');
+      updateImportPreview(arr);
+      setImportStatus(`Previewed ${previewData.length} row${previewData.length === 1 ? '' : 's'} from pasted JSON`);
+    } catch (err) {
+      setImportStatus('Invalid JSON', 'error');
+    }
+  });
+
+  importSaveBtn?.addEventListener('click', async () => {
+    if (!token) return setImportStatus('Please login first', 'error');
+    if (!previewData.length) return setImportStatus('No data to import', 'error');
+    const mode = getImportMode();
+    if (mode === 'replace' && importReplaceConfirmInput?.value.trim() !== 'REPLACE') {
+      return setImportStatus('Type REPLACE to confirm', 'error');
+    }
+    setImportStatus('Importing...');
+    try {
+      const res = await api('/api/guests/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode, guests: previewData }),
+      });
+      if (!res.ok) throw new Error('upload failed');
+      const data = await res.json();
+      const bits = [];
+      if (typeof data.inserted === 'number') bits.push(`${data.inserted} added`);
+      if (typeof data.updated === 'number') bits.push(`${data.updated} updated`);
+      setImportStatus(`Imported ${data.count} guest${data.count === 1 ? '' : 's'}${bits.length ? ` (${bits.join(', ')})` : ''}`);
+      loadGuests();
+      setTimeout(closeImportModal, 800);
+    } catch (err) {
+      setImportStatus('Import failed', 'error');
+    }
+  });
 
   // Guest modal
   const guestModal = document.getElementById('guest-modal');
