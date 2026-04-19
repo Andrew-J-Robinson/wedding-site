@@ -1,6 +1,6 @@
 const supabase = require('../_lib/supabase');
 const { verifyAuth } = require('../_lib/auth');
-const { publicSettingsPayload } = require('../_lib/publicSettingsPayload');
+const { publicSettingsPayload, heroPayload } = require('../_lib/publicSettingsPayload');
 
 module.exports = async function handler(req, res) {
   if (req.method === 'GET') {
@@ -8,6 +8,10 @@ module.exports = async function handler(req, res) {
     const settings = row?.data || {};
 
     if (!(await verifyAuth(req))) {
+      const section = req.query && req.query.section;
+      if (section === 'hero') {
+        return res.json(heroPayload(settings));
+      }
       return res.json(publicSettingsPayload(settings));
     }
 
