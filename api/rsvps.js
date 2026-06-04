@@ -42,6 +42,12 @@ module.exports = async function handler(req, res) {
       });
     }
 
+    const guestIds = [...new Set(records.map((r) => r.guest_id).filter(Boolean))];
+    if (guestIds.length > 0) {
+      const { error: deleteError } = await supabase.from('rsvps').delete().in('guest_id', guestIds);
+      if (deleteError) return res.status(500).json({ error: deleteError.message });
+    }
+
     const { error } = await supabase.from('rsvps').insert(records);
     if (error) return res.status(500).json({ error: error.message });
 
