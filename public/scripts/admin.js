@@ -371,9 +371,6 @@
 
   const renderStats = () => {
     const total = guests.length;
-    const households = new Set(guests.map((g) => g.householdId).filter(Boolean)).size;
-    const plusOnes = guests.filter((g) => g.plusOneAllowed).length;
-    const kids = guests.filter((g) => g.hasKids).length;
     const yes = guests.filter((g) => g.rsvpStatus === 'yes').length;
     const maybe = guests.filter((g) => g.rsvpStatus === 'maybe').length;
     const no = guests.filter((g) => g.rsvpStatus === 'no').length;
@@ -393,11 +390,9 @@
       if (el) el.textContent = String(n);
     };
     setText('stat-total', total);
-    setText('stat-households', households);
-    setText('stat-plusones', plusOnes);
-    setText('stat-kids', kids);
     setText('stat-plusones-attending', plusOnesAttending);
     setText('stat-kids-attending', kidsAttending);
+    setText('stat-total-attending', yes + plusOnesAttending + kidsAttending);
     setText('count-yes', yes);
     setText('count-maybe', maybe);
     setText('count-no', no);
