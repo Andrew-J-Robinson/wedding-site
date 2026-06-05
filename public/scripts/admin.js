@@ -379,6 +379,15 @@
     const no = guests.filter((g) => g.rsvpStatus === 'no').length;
     const pending = guests.filter((g) => !g.rsvpStatus).length;
 
+    const guestById = new Map(guests.map((g) => [g.id, g.name.toLowerCase()]));
+    const kidsAttending = rsvps.filter((r) => /^child \d+ of /i.test(r.name)).length;
+    const plusOnesAttending = rsvps.filter((r) => {
+      if (/^child \d+ of /i.test(r.name)) return false;
+      if (!r.guestId) return false;
+      const primaryName = guestById.get(r.guestId);
+      return primaryName !== undefined && r.name.toLowerCase() !== primaryName;
+    }).length;
+
     const setText = (id, n) => {
       const el = document.getElementById(id);
       if (el) el.textContent = String(n);
@@ -387,6 +396,8 @@
     setText('stat-households', households);
     setText('stat-plusones', plusOnes);
     setText('stat-kids', kids);
+    setText('stat-plusones-attending', plusOnesAttending);
+    setText('stat-kids-attending', kidsAttending);
     setText('count-yes', yes);
     setText('count-maybe', maybe);
     setText('count-no', no);
