@@ -906,6 +906,30 @@
 
   document.getElementById('guests-refresh-rsvp')?.addEventListener('click', refreshRsvps);
 
+  document.getElementById('rsvp-export-btn')?.addEventListener('click', () => {
+    if (!rsvps.length) return;
+    const sorted = [...rsvps].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    const header = ['name', 'rsvp', 'allergies', 'note', 'guestId', 'submittedAt'];
+    const rows = sorted.map((r) => [
+      r.name,
+      r.rsvp || '',
+      r.allergies || '',
+      r.note || '',
+      r.guestId || '',
+      r.createdAt ? new Date(r.createdAt).toLocaleString() : '',
+    ].map(csvCell).join(','));
+    const csv = [header.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `rsvp-responses-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
   // ----- Import modal -----
   const importModal = document.getElementById('import-modal');
   const importOpenBtn = document.getElementById('guests-import-btn');
